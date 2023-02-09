@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#include "fileloader.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -17,5 +19,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+public slots:
+    void slot_loadFile();
 };
 #endif // MAINWINDOW_H
