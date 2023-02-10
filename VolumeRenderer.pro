@@ -1,6 +1,6 @@
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += core widgets openglwidgets multimedia
 
 CONFIG += c++17
 
@@ -49,6 +49,8 @@ else:unix: LIBS += -L$$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/ -
 INCLUDEPATH += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/include
 DEPENDPATH += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/include
 
+
+
 win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/release/libdcmimage.a
 else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/debug/libdcmimage.a
 else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/release/dcmimage.lib
@@ -67,3 +69,35 @@ else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../../..
 else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/release/dcmimgle.lib
 else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/debug/dcmimgle.lib
 else:unix: PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/libdcmimgle.a
+
+
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/release/ -ldcmdata
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/debug/ -ldcmdata
+else:unix: LIBS += -L$$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/ -ldcmdata
+
+INCLUDEPATH += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/include
+DEPENDPATH += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/include
+
+win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/release/libdcmdata.a
+else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/debug/libdcmdata.a
+else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/release/dcmdata.lib
+else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/debug/dcmdata.lib
+else:unix: PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/libdcmdata.a
+
+
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/release/ -lofstd
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/debug/ -lofstd
+else:unix: LIBS += -L$$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/ -lofstd
+
+INCLUDEPATH += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/include
+DEPENDPATH += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/include
+
+win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/release/libofstd.a
+else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/debug/libofstd.a
+else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/release/ofstd.lib
+else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/debug/ofstd.lib
+else:unix: PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/libofstd.a

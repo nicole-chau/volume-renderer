@@ -23,5 +23,7 @@ void MainWindow::slot_loadFile() {
                                                     QFileDialog::ShowDirsOnly);
 
     FileLoader fileLoader(directoryName.toStdString());
+//    fileLoader.processPixelData();
+    fileLoader.getTags();
 }
 
