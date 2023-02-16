@@ -4,16 +4,28 @@
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setFocusPolicy(Qt::StrongFocus);
     connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(slot_loadFile()));
+
+   RayCaster raycaster;
+   renderedImage = raycaster.RenderScene();
+   DisplayQImage(renderedImage);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::DisplayQImage(QImage &i)
+{
+    QPixmap pixmap(QPixmap::fromImage(i));
+    graphicsScene.addPixmap(pixmap);
+    graphicsScene.setSceneRect(pixmap.rect());
+    ui->scene_display->setScene(&graphicsScene);
 }
 
 void MainWindow::slot_loadFile() {

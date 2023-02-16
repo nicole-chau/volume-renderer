@@ -13,11 +13,13 @@ QMAKE_MACOSX_DEPLOYMENT_TARGET = 13.0
 SOURCES += \
     fileloader.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    raycaster.cpp
 
 HEADERS += \
     fileloader.h \
-    mainwindow.h
+    mainwindow.h \
+    raycaster.h
 
 FORMS += \
     mainwindow.ui
