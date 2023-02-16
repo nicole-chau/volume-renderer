@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(slot_loadFile()));
 
    RayCaster raycaster;
-   renderedImage = raycaster.RenderScene();
+   renderedImage = raycaster.RenderData();
    DisplayQImage(renderedImage);
 }
 

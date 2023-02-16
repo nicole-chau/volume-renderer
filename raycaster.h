@@ -6,6 +6,11 @@ class RayCaster
 {
 public:
     RayCaster();
-    QImage RenderScene();
+    QImage RenderData();
+    void createPhantom();
+
+private:
+    // depth x height x width
+    float phantom[512][512][512];
 };
 
