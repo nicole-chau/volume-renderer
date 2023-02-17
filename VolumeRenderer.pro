@@ -6,6 +6,9 @@ CONFIG += c++17
 
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 13.0
 
+INCLUDEPATH += include
+INCLUDEPATH += $$PWD
+
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
@@ -14,12 +17,19 @@ SOURCES += \
     fileloader.cpp \
     main.cpp \
     mainwindow.cpp \
-    raycaster.cpp
+    raycaster.cpp \
+    camera.cpp \
+    scene.cpp \
+    ray.cpp
 
 HEADERS += \
     fileloader.h \
     mainwindow.h \
-    raycaster.h
+    raycaster.h \
+    camera.h \
+    scene.h \
+    ray.h \
+    globals.h
 
 FORMS += \
     mainwindow.ui
@@ -28,6 +38,11 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+
+macx {
+    INCLUDEPATH += /usr/local/include
+}
 
 
 # DCMTK Library
