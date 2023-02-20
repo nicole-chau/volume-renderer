@@ -13,18 +13,26 @@ struct AABoundingBox
         : min(min), max(max) {}
 };
 
-class RayCaster
+class RayCast
 {
 public:
-    RayCaster();
-    QImage RenderData();
+    RayCast();
+    QImage renderData();
     void createPhantom();
 
 private:
-    // depth x height x width
+    // width x height x depth (x, y, z)
     int phantom[32][32][32] = {{{}}};
+    Camera camera;
 
     // Compute near and far intersections of ray with bounding box
-    bool RayBoxIntersect(Ray ray, AABoundingBox box, float &tNear, float &tFar);
+    bool rayBoxIntersect(Ray ray, AABoundingBox box, float &tNear, float &tFar);
+
+    // Sample voxel along ray
+    Color3f sampleVolume(Ray ray, float tNear, float tFar);
+
+    // Trilinear interpolation to get sampled value
+    float trilinearInterp(Point3f pos);
+
 };
 

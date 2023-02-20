@@ -14,7 +14,7 @@ Scene::Scene()
 void Scene::SetCamera(const Camera &c)
 {
     camera = Camera(c);
-    camera.create();
+//    camera.create();
 //    film.SetDimensions(c.width, c.height);
 }
 

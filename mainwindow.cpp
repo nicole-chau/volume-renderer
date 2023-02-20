@@ -10,8 +10,8 @@ MainWindow::MainWindow(QWidget *parent)
     setFocusPolicy(Qt::StrongFocus);
     connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(slot_loadFile()));
 
-   RayCaster raycaster;
-   renderedImage = raycaster.RenderData();
+   RayCast rayCast;
+   renderedImage = rayCast.renderData();
    DisplayQImage(renderedImage);
 }
 

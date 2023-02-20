@@ -6,7 +6,7 @@
 #include <QGraphicsScene>
 
 #include "fileloader.h"
-#include "raycaster.h"
+#include "raycast.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
