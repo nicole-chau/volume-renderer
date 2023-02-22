@@ -22,7 +22,7 @@ public:
 
 private:
     // width x height x depth (x, y, z)
-    int phantom[32][32][32] = {{{}}};
+    float phantom[32][32][32] = {{{}}};
     Camera camera;
 
     // Compute near and far intersections of ray with bounding box

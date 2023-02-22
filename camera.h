@@ -10,7 +10,7 @@ private:
     glm::vec4 right;
     glm::vec4 up;
     float fov;
-    glm::vec4 eye;
+    Point3f eye;
     Point3f ref; // point in world space towards which camera is pointing
     float nearClip;
     float farClip;
@@ -35,7 +35,7 @@ public:
     void rotateUp(float deg);
 
 
-    Ray Raycast(const Point2f &pt) const;         //Creates a ray in 3D space given a 2D point on the screen, in screen coordinates.
+    Ray Raycast(const Point2f &pixel) const;         //Creates a ray in 3D space given a 2D point on the screen, in screen coordinates.
     Ray Raycast(float x, float y) const;            //Same as above, but takes two floats rather than a vec2.
     Ray RaycastNDC(float ndc_x, float ndc_y) const; //Creates a ray in 3D space given a 2D point in normalized device coordinates.
 };
