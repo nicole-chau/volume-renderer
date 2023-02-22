@@ -132,7 +132,7 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
         currLength = glm::distance(currPos, start);
     }
 
-    Color3f color(transmittance);
+    Color3f color(glm::abs(1.f - transmittance));
     return color;
 }
 
@@ -168,9 +168,6 @@ float RayCast::trilinearInterp(Point3f pos)
 
     return result;
 }
-
-
-
 
 QImage RayCast::renderData()
 {
