@@ -25,7 +25,7 @@ void RayCast::createPhantom()
                     && (d <= max && h <= max && w <= max))
                 {
                     // set density to 0.2
-                    phantom[w][h][d] = 1;
+                    phantom[w][h][d] = 0.5;
                 } else
                 {
                     phantom[w][h][d] = 0;
@@ -179,17 +179,16 @@ QImage RayCast::renderData()
     result.fill(qRgb(0.f, 0.f, 0.f));
 
 
-    // ------------ RAY CASTING ALGORITHM ------------
+    // ----------------------------------------------------------------------//
+    // ----------------------- RAY CASTING ALGORITHM ----------------------- //
+    // ----------------------------------------------------------------------//
+
     // Initialize bounding box -- size of phantom voxel data
     AABoundingBox box(Point3f(-16,-16,20), Point3f(16,16,52));
 
     // Iterate through each pixel
     for (int w = 0; w < result.width(); ++w) {
         for (int h = 0; h < result.height(); ++h) {
-
-            if (w == 31 && h == 31) {
-                int x = 0;
-            }
 
             // Initialize pixel color to black
             Color3f color(0, 0, 0);

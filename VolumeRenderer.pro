@@ -19,24 +19,15 @@ SOURCES += \
     mainwindow.cpp \
     camera.cpp \
     raycast.cpp \
-    scene.cpp \
     ray.cpp \
-#    openGL/drawable.cpp \
-#    openGL/glwidget277.cpp \
-#    openGL/shaderprogram.cpp \
 
 HEADERS += \
     fileloader.h \
     mainwindow.h \
     camera.h \
     raycast.h \
-    scene.h \
     ray.h \
     globals.h \
-#    openGL/drawable.h \
-#    openGL/glwidget277.h \
-#    openGL/shaderprogram.h \
-#    la.h
 
 FORMS += \
     mainwindow.ui
