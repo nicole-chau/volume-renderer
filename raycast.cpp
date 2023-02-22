@@ -98,7 +98,7 @@ bool RayCast::rayBoxIntersect(Ray ray, AABoundingBox box, float &tNear, float &t
 }
 
 Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
-    float stepSize = 10; // TODO: update
+    float stepSize = 1; // TODO: update
 
     Point3f start = ray.origin + (ray.direction * tNear);
     Point3f end = ray.origin + (ray.direction * tFar);
@@ -138,22 +138,19 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
 
 float RayCast::trilinearInterp(Point3f pos)
 {
+    // TODO: Map to voxel data indices
+    // (0, 0, 20) --> (16, 16, 0)
     float x = pos.x + 16;
     float y = pos.y + 16;
     float z = pos.z - 20;
 
-    int xf = std::floor(x);
-    int yf = std::floor(y);
-    int zf = std::floor(z);
+    int xf = std::max(std::floor(x), 0.f);
+    int yf = std::max(std::floor(y), 0.f);
+    int zf = std::max(std::floor(z), 0.f);
 
-    return phantom[xf][yf][zf];
-
-    int xc = std::ceil(x);
-    int yc = std::ceil(y);
-    int zc = std::ceil(z);
-
-    // TODO: map world coords back to voxel indices
-    // (0, 0, 20) --> (16, 16, 0)
+    int xc = std::min(std::ceil(x), 31.f);
+    int yc = std::min(std::ceil(y), 31.f);
+    int zc = std::min(std::ceil(z), 31.f);
 
     // Fractional part of considered resampling location's position
     float xfrac = x - std::floor(x);
@@ -171,6 +168,8 @@ float RayCast::trilinearInterp(Point3f pos)
 
     return result;
 }
+
+
 
 
 QImage RayCast::renderData()

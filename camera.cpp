@@ -14,14 +14,7 @@ Camera::Camera()
       width(32),
       height(32)
 {
-//    float tanFov = tan(glm::radians(fov/2));
-//    float len = glm::length(ref - eye);
-//    glm::vec4 v = (up * len * tanFov);
-//    vertical = Vector3f(v.x, v.y, v.z);
-
-//    glm::vec4 h = right * len * aspectRatio * tanFov;
-//    horizontal = Vector3f(h.x, h.y, h.z);
-
+    /*
     // RecomputeAttributes()
     Vector3f look = glm::normalize(ref - eye);
     Vector3f rightRecompute = glm::normalize(glm::cross(look, Vector3f(up.x, up.y, up.z)));
@@ -34,6 +27,7 @@ Camera::Camera()
     float aspect = width/(float)height;
     vertical = Vector3f(up)*len*tan_fovy;
     horizontal = Vector3f(right)*len*aspect*tan_fovy;
+    */
 }
 
 glm::mat4 Camera::viewMatrix() {
@@ -128,8 +122,6 @@ glm::mat4 Camera::rotate(float angle, float x, float y, float z) {
 // RAY CASTING
 Ray Camera::Raycast(const Point2f &pixel) const
 {
-   // return Raycast(pixel.x, pixel.y);
-
     // pixel to NDC
     Point2f ndc((2.f * pixel.x / width) - 1,
                 1 - (2.f * pixel.y / height));
@@ -148,6 +140,7 @@ Ray Camera::Raycast(const Point2f &pixel) const
     return Ray(rayOrigin, rayDirection);
 }
 
+/*
 Ray Camera::Raycast(float x, float y) const
 {
     float ndc_x = (2.f*x/width - 1);
@@ -161,3 +154,4 @@ Ray Camera::RaycastNDC(float ndc_x, float ndc_y) const
     Ray result(eye, glm::normalize(P - eye));
     return result;
 }
+*/
