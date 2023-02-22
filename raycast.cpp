@@ -1,7 +1,9 @@
 #include "raycast.h"
 
+#include "math.h"
+
 RayCast::RayCast()
-    : camera(Camera())
+    : camera(Camera(cubeSize, cubeSize))
 {
     createPhantom();
 }
@@ -11,12 +13,15 @@ RayCast::RayCast()
 void RayCast::createPhantom()
 {
     // Create phantom cube for testing
-    int depth = 32;
-    int height = 32;
-    int width = 32;
+    int depth = cubeSize;
+    int height = cubeSize;
+    int width = cubeSize;
 
-    int min = 8;
-    int max = 24;
+    int min = cubeSize * 0.2;
+    int max = cubeSize * 0.8;
+
+    int min2 = cubeSize * 0.4;
+    int max2 = cubeSize * 0.6;
 
     for (int d = 0; d < depth; ++d) {
         for (int h = 0; h < height; ++h) {
@@ -24,8 +29,15 @@ void RayCast::createPhantom()
                 if ((d >= min && h >= min && w >= min)
                     && (d <= max && h <= max && w <= max))
                 {
-                    // set density to 0.2
-                    phantom[w][h][d] = 0.5;
+                    if ((d >= min2 && h >= min2 && w >= min2)
+                            && (d <= max2 && h <= max2 && w <= max2))
+                    {
+                        phantom[w][h][d] = 0.6;
+                    } else
+                    {
+                        // set density to 0.2
+                        phantom[w][h][d] = 0.1;
+                    }
                 } else
                 {
                     phantom[w][h][d] = 0;
@@ -106,6 +118,7 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
     Point3f currPos = start;
 
     // Initialize transmittance
+    Color3f color(0.f);
     float transmittance = 1; // 1 if clear, 0 if opaque
 
     // Loop while we have not reached end of box
@@ -113,26 +126,28 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
     float endLength = glm::distance(end, start);
     while (currLength < endLength)
     {
-        if (transmittance >= 0) // something is still visible
-        {
-            // Trilinearly interpolate voxel value at currPos
-            float sampledVal = trilinearInterp(currPos);
-
-            if (sampledVal > 0) {
-                std::string x = "hi";
-            }
-
-            // Process voxel value
-            // TODO: update transmittance computation
-            transmittance -= sampledVal;
-        }
-
         // Step along ray
         currPos = currPos + (ray.direction * stepSize);
         currLength = glm::distance(currPos, start);
+
+        if (transmittance >= 0) // something is still visible
+        {
+            // Trilinearly interpolate voxel value at currPos
+            float density = trilinearInterp(currPos);
+
+            // Process voxel value
+            // TODO: update transmittance computation
+
+            // Transmittance is inverse of density T = 1 - p
+//            transmittance -= density;
+
+            transmittance *= exp(-stepSize * density);
+            color += stepSize * density * transmittance;
+
+        }
     }
 
-    Color3f color(glm::abs(1.f - transmittance));
+    color = Vector3f(glm::abs(1.f - transmittance));
     return color;
 }
 
@@ -140,17 +155,20 @@ float RayCast::trilinearInterp(Point3f pos)
 {
     // TODO: Map to voxel data indices
     // (0, 0, 20) --> (16, 16, 0)
-    float x = pos.x + 16;
-    float y = pos.y + 16;
+    float x = pos.x + cubeSize / 2;
+    float y = pos.y + cubeSize /2;
     float z = pos.z - 20;
 
-    int xf = std::max(std::floor(x), 0.f);
-    int yf = std::max(std::floor(y), 0.f);
-    int zf = std::max(std::floor(z), 0.f);
+    int min = 0;
+    int max = cubeSize - 1;
 
-    int xc = std::min(std::ceil(x), 31.f);
-    int yc = std::min(std::ceil(y), 31.f);
-    int zc = std::min(std::ceil(z), 31.f);
+    int xf = clampIndexBounds(std::floor(x), min, max);
+    int yf = clampIndexBounds(std::floor(y), min, max);
+    int zf = clampIndexBounds(std::floor(z), min, max);
+
+    int xc = clampIndexBounds(std::ceil(x), min, max);
+    int yc = clampIndexBounds(std::ceil(y), min, max);
+    int zc = clampIndexBounds(std::ceil(z), min, max);
 
     // Fractional part of considered resampling location's position
     float xfrac = x - std::floor(x);
@@ -169,9 +187,14 @@ float RayCast::trilinearInterp(Point3f pos)
     return result;
 }
 
+int RayCast::clampIndexBounds(int index, int min, int max)
+{
+    return std::min(max, std::max(min, index));
+}
+
 QImage RayCast::renderData()
 {
-    QImage result(32, 32, QImage::Format_RGB32);
+    QImage result(cubeSize, cubeSize, QImage::Format_RGB32);
 //    result = result.scaled(512, 512, Qt::KeepAspectRatio);
     result.fill(qRgb(0.f, 0.f, 0.f));
 
@@ -181,7 +204,8 @@ QImage RayCast::renderData()
     // ----------------------------------------------------------------------//
 
     // Initialize bounding box -- size of phantom voxel data
-    AABoundingBox box(Point3f(-16,-16,20), Point3f(16,16,52));
+    AABoundingBox box(Point3f(-cubeSize/2, -cubeSize/2, 50),
+                      Point3f(cubeSize/2, cubeSize/2, cubeSize+50));
 
     // Iterate through each pixel
     for (int w = 0; w < result.width(); ++w) {

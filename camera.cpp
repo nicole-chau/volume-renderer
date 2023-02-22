@@ -11,8 +11,8 @@ Camera::Camera()
       nearClip( 0.01),
       farClip(100.f),
       aspectRatio(1.f),
-      width(32),
-      height(32)
+      width(120),
+      height(120)
 {
     /*
     // RecomputeAttributes()
@@ -29,6 +29,20 @@ Camera::Camera()
     horizontal = Vector3f(right)*len*aspect*tan_fovy;
     */
 }
+
+Camera::Camera(int width, int height)
+    : forward(0.f, 0.f, -1.f, 0.f),
+      right(1.f, 0.f, 0.f, 0.f),
+      up(0.f, 1.f, 0.f, 0.f),
+      fov(45.f),
+      eye(0.f, 0.f, -10.f),
+      ref(Point3f(0,0,0)),
+      nearClip( 0.01),
+      farClip(100.f),
+      aspectRatio(1.f),
+      width(width),
+      height(height)
+{ }
 
 glm::mat4 Camera::viewMatrix() {
     glm::mat4 orientation(right, up, forward, glm::vec4(0.f, 0.f, 0.f, 1.f));

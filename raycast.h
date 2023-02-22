@@ -22,7 +22,9 @@ public:
 
 private:
     // width x height x depth (x, y, z)
-    float phantom[32][32][32] = {{{}}};
+    int cubeSize = 120;
+
+    float phantom[120][120][120] = {{{}}};
     Camera camera;
 
     // Compute near and far intersections of ray with bounding box
@@ -33,6 +35,8 @@ private:
 
     // Trilinear interpolation to get sampled value
     float trilinearInterp(Point3f pos);
+    int clampIndexBounds(int index, int min, int max);
+
 
     friend class MainWindow;
 };
