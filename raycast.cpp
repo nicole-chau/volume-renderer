@@ -204,8 +204,8 @@ QImage RayCast::renderData()
     // ----------------------------------------------------------------------//
 
     // Initialize bounding box -- size of phantom voxel data
-    AABoundingBox box(Point3f(-cubeSize/2, -cubeSize/2, 50),
-                      Point3f(cubeSize/2, cubeSize/2, cubeSize+50));
+    AABoundingBox box(Point3f(-cubeSize/2, -cubeSize/2, 100),
+                      Point3f(cubeSize/2, cubeSize/2, cubeSize+100));
 
     // Iterate through each pixel
     for (int w = 0; w < result.width(); ++w) {
@@ -216,7 +216,7 @@ QImage RayCast::renderData()
 
             // Cast ray to pixel on screen
             Point2f pixel(w, h);
-            Ray ray = camera.Raycast(pixel);
+            Ray ray = camera.rayCast(pixel);
 
             // Set tNear = -infinity and tFar = infinity
             float tNear = -std::numeric_limits<double>::infinity();

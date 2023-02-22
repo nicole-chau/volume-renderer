@@ -1,49 +1,106 @@
 #include "camera.h"
 #include "math.h"
 
+//Camera::Camera()
+//    : forward(0.f, 0.f, -1.f),
+//      right(1.f, 0.f, 0.f),
+//      up(0.f, 1.f, 0.f),
+//      fov(45.f),
+//      eye(0.f, 0.f, -10.f),
+//      ref(Point3f(0,0,0)),
+//      nearClip( 0.01),
+//      farClip(100.f),
+//      aspectRatio(1.f),
+//      width(120),
+//      height(120)
+//{
+//    recomputeAttributes();
+//}
+
+//Camera::Camera(int width, int height)
+//    : forward(0.f, 0.f, -1.f),
+//      right(1.f, 0.f, 0.f, 0.f),
+//      up(0.f, 1.f, 0.f, 0.f),
+//      fov(45.f),
+//      eye(0.f, 0.f, -10.f),
+//      ref(Point3f(0,0,0)),
+//      nearClip( 0.01),
+//      farClip(100.f),
+//      aspectRatio(1.f),
+//      width(width),
+//      height(height)
+//{
+//    recomputeAttributes();
+//}
+
 Camera::Camera()
-    : forward(0.f, 0.f, -1.f, 0.f),
-      right(1.f, 0.f, 0.f, 0.f),
-      up(0.f, 1.f, 0.f, 0.f),
-      fov(45.f),
-      eye(0.f, 0.f, -10.f),
-      ref(Point3f(0,0,0)),
-      nearClip( 0.01),
-      farClip(100.f),
-      aspectRatio(1.f),
-      width(120),
-      height(120)
+    : Camera(400, 400)
 {
-    /*
-    // RecomputeAttributes()
-    Vector3f look = glm::normalize(ref - eye);
-    Vector3f rightRecompute = glm::normalize(glm::cross(look, Vector3f(up.x, up.y, up.z)));
-    Vector3f upRecompute = glm::cross(rightRecompute, look);
-    right = glm::vec4(rightRecompute.x, rightRecompute.y, rightRecompute.z, 0.f);
-    up = glm::vec4(upRecompute.x, upRecompute.y, upRecompute.z, 0.f);
+    forward = glm::vec3(0,0,-1);
+    up = glm::vec3(0,1,0);
+    right = glm::vec3(1,0,0);
+
+    phi = 0.f;
+    theta = 0.f;
+    r = 10.f;
+}
+
+Camera::Camera(unsigned int w, unsigned int h):
+    Camera(w, h, glm::vec3(0,0,10), glm::vec3(0,0,0), glm::vec3(0,1,0))
+{}
+
+Camera::Camera(unsigned int w, unsigned int h, const glm::vec3 &e, const glm::vec3 &r, const glm::vec3 &worldUp)
+    : worldUp(worldUp),
+      fov(45),
+      eye(e),
+      ref(r),
+      nearClip(0.1f),
+      farClip(1000),
+      width(w),
+      height(h),
+      phi(0.f), theta(0.f), r(10.f)
+{
+    recomputeAttributes();
+//    recomputePolarAttributes();
+}
+
+void Camera::recomputeAttributes()
+{
+    forward = glm::normalize(ref - eye);
+    right = glm::normalize(glm::cross(forward, worldUp));
+    up = glm::cross(right, forward);
 
     float tan_fovy = tan(glm::radians(fov/2));
     float len = glm::length(ref - eye);
     float aspect = width/(float)height;
-    vertical = Vector3f(up)*len*tan_fovy;
-    horizontal = Vector3f(right)*len*aspect*tan_fovy;
-    */
+    vertical = Vector3f(up.x, up.y, up.z)*len*tan_fovy;
+    horizontal = Vector3f(right.x, right.y, right.z)*len*aspect*tan_fovy;
 }
 
-Camera::Camera(int width, int height)
-    : forward(0.f, 0.f, -1.f, 0.f),
-      right(1.f, 0.f, 0.f, 0.f),
-      up(0.f, 1.f, 0.f, 0.f),
-      fov(45.f),
-      eye(0.f, 0.f, -10.f),
-      ref(Point3f(0,0,0)),
-      nearClip( 0.01),
-      farClip(100.f),
-      aspectRatio(1.f),
-      width(width),
-      height(height)
-{ }
+void Camera::recomputePolarAttributes() {
+    glm::vec4 unitEye(0.f, 0.f, 0.f, 1.f);
+    glm::vec4 unitForward(0.f, 0.f, 1.f, 0.f);
+    glm::vec4 unitUp(0.f, 1.f, 0.f, 0.f);
+    glm::vec4 unitRight(1.f, 0.f, 0.f, 0.f);
 
+    glm::mat4 polarMat(1.f);
+
+    polarMat = glm::rotate(polarMat, glm::radians(theta), glm::vec3(0.f, 1.f, 0.f))
+               * glm::rotate(polarMat, glm::radians(phi), glm::vec3(1.f, 0.f, 0.f))
+               * glm::translate(polarMat, glm::vec3(0.f, 0.f, r));
+
+    eye = glm::vec3(polarMat * unitEye);
+    forward = glm::vec3(polarMat * unitForward);
+    up = glm::vec3(polarMat * unitUp);
+    right = glm::vec3(polarMat * unitRight);
+}
+
+glm::mat4 Camera::getViewProj()
+{
+    return glm::perspective(glm::radians(fov), width / (float)height, nearClip, farClip) * glm::lookAt(eye, ref, up);
+}
+
+/*
 glm::mat4 Camera::viewMatrix() {
     glm::mat4 orientation(right, up, forward, glm::vec4(0.f, 0.f, 0.f, 1.f));
     glm::transpose(orientation);
@@ -65,35 +122,51 @@ glm::mat4 Camera::projMatrix() {
 
     return result;
 }
+*/
 
 void Camera::translateForward(float z) {
-    eye[2] += z;
+//    eye[2] += z;
+    r -= z;
+    recomputePolarAttributes();
 }
 
 void Camera::translateRight(float x) {
-    eye[0] += x;
+//    eye[0] += x;
+    glm::vec3 translation = right * x;
+    eye += translation;
+    ref += translation;
 }
 
 void Camera::translateUp(float y) {
-    eye[1] += y;
+//    eye[1] += y;
+    glm::vec3 translation = up * y;
+    eye += translation;
+    ref += translation;
 }
 
 void Camera::rotateForward(float deg) {
     glm::mat4 rotate = Camera::rotate(deg, 0.f, 0.f, 1.f);
     glm::vec4 result = rotate * glm::vec4(eye, 1.f);
     eye = glm::vec3(result.x, result.y, result.z);
+
 }
 
 void Camera::rotateRight(float deg) {
-    glm::mat4 rotate = Camera::rotate(deg, 1.f, 0.f, 0.f);
-    glm::vec4 result = rotate * glm::vec4(eye, 1.f);
-    eye = glm::vec3(result.x, result.y, result.z);
+//    glm::mat4 rotate = Camera::rotate(deg, 1.f, 0.f, 0.f);
+//    glm::vec4 result = rotate * glm::vec4(eye, 1.f);
+//    eye = glm::vec3(result.x, result.y, result.z);
+
+    phi += deg;
+    recomputePolarAttributes();
 }
 
 void Camera::rotateUp(float deg) {
-    glm::mat4 rotate = Camera::rotate(deg, 0.f, 1.f, 0.f);
-    glm::vec4 result = rotate * glm::vec4(eye, 1.f);
-    eye = glm::vec3(result.x, result.y, result.z);
+//    glm::mat4 rotate = Camera::rotate(deg, 0.f, 1.f, 0.f);
+//    glm::vec4 result = rotate * glm::vec4(eye, 1.f);
+//    eye = glm::vec3(result.x, result.y, result.z);
+
+    theta += deg;
+    recomputePolarAttributes();
 }
 
 
@@ -134,35 +207,39 @@ glm::mat4 Camera::rotate(float angle, float x, float y, float z) {
 }
 
 // RAY CASTING
-Ray Camera::Raycast(const Point2f &pixel) const
+Ray Camera::rayCast(const Point2f &pixel) const
 {
     // pixel to NDC
     Point2f ndc((2.f * pixel.x / width) - 1,
                 1 - (2.f * pixel.y / height));
 
-    // screen point to world point
-    float alpha = glm::radians(fov / 2);
-    float len = glm::length(ref - eye);
-    Vector3f V = Vector3f(up.x, up.y, up.z) * len * tan(alpha);
-    glm::vec3 right = glm::cross(glm::normalize(ref - eye), Vector3f(up.x, up.y, up.z));
-    Vector3f H = right * len * aspectRatio * tan(alpha);
-    Point3f pointW = ref + ndc.x * H + ndc.y * V;
+    glm::vec3 P = ref + ndc.x * horizontal + ndc.y * vertical;
+    Ray result(eye, glm::normalize(P - eye));
+    return result;
 
-    // world point to ray
-    Point3f rayOrigin = eye;
-    Vector3f rayDirection = glm::normalize(pointW - eye);
-    return Ray(rayOrigin, rayDirection);
+    // screen point to world point
+//    float alpha = glm::radians(fov / 2);
+//    float len = glm::length(ref - eye);
+//    Vector3f V = Vector3f(up.x, up.y, up.z) * len * tan(alpha);
+//    glm::vec3 right = glm::cross(glm::normalize(ref - eye), Vector3f(up.x, up.y, up.z));
+//    Vector3f H = right * len * aspectRatio * tan(alpha);
+//    Point3f pointW = ref + ndc.x * H + ndc.y * V;
+
+//    // world point to ray
+//    Point3f rayOrigin = eye;
+//    Vector3f rayDirection = glm::normalize(pointW - eye);
+//    return Ray(rayOrigin, rayDirection);
 }
 
 /*
-Ray Camera::Raycast(float x, float y) const
+Ray Camera::rayCast(float x, float y) const
 {
     float ndc_x = (2.f*x/width - 1);
     float ndc_y = (1 - 2.f*y/height);
     return RaycastNDC(ndc_x, ndc_y);
 }
 
-Ray Camera::RaycastNDC(float ndc_x, float ndc_y) const
+Ray Camera::rayCastNDC(float ndc_x, float ndc_y) const
 {
     glm::vec3 P = ref + ndc_x * horizontal + ndc_y * vertical;
     Ray result(eye, glm::normalize(P - eye));
