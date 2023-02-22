@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QImage>
 #include <QGraphicsScene>
+#include <QKeyEvent>
 
 #include "fileloader.h"
 #include "raycast.h"
@@ -19,7 +20,9 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
     void DisplayQImage(QImage &i);
+    void keyPressEvent(QKeyEvent *e);
 
 private:
     Ui::MainWindow *ui;
@@ -29,6 +32,9 @@ private:
 
     //This is the image rendered by your program when it loads a scene
     QImage renderedImage;
+
+    // Ray caster used to render scene
+    RayCast rayCast;
 
 
 public slots:

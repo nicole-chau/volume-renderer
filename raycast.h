@@ -34,5 +34,6 @@ private:
     // Trilinear interpolation to get sampled value
     float trilinearInterp(Point3f pos);
 
+    friend class MainWindow;
 };
 

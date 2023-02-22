@@ -123,7 +123,7 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
             }
 
             // Process voxel value
-            // TODO: update transmittance calculation
+            // TODO: update transmittance computation
             transmittance -= sampledVal;
         }
 
