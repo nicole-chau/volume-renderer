@@ -24,6 +24,11 @@ public:
     void DisplayQImage(QImage &i);
     void keyPressEvent(QKeyEvent *e);
 
+    void mousePressEvent(QMouseEvent *e);
+    void mouseMoveEvent(QMouseEvent *e);
+
+    glm::vec2 m_mousePosPrev;
+
 private:
     Ui::MainWindow *ui;
 
