@@ -26,6 +26,8 @@ private:
 
     glm::mat4 rotate(float angle, float x, float y, float z);
 
+    friend class RayCast;
+
 public:
     Camera();
     Camera(unsigned int width, unsigned int height);

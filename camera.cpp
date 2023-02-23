@@ -73,7 +73,7 @@ void Camera::recomputeAttributes()
     float tan_fovy = tan(glm::radians(fov/2));
     float len = glm::length(ref - eye);
     float aspect = width/(float)height;
-    vertical = Vector3f(up.x, up.y, up.z)*len*tan_fovy;
+    vertical = up*len*tan_fovy;
     horizontal = Vector3f(right.x, right.y, right.z)*len*aspect*tan_fovy;
 }
 
@@ -126,7 +126,7 @@ glm::mat4 Camera::projMatrix() {
 
 void Camera::translateForward(float z) {
 //    eye[2] += z;
-    r -= z;
+    r += z;
     recomputePolarAttributes();
 }
 

@@ -204,8 +204,13 @@ QImage RayCast::renderData()
     // ----------------------------------------------------------------------//
 
     // Initialize bounding box -- size of phantom voxel data
-    AABoundingBox box(Point3f(-cubeSize/2, -cubeSize/2, 100),
-                      Point3f(cubeSize/2, cubeSize/2, cubeSize+100));
+    glm::mat4 viewProj = glm::lookAt(camera.eye, camera.ref, camera.up);
+    glm::vec4 boxMin(-cubeSize/2, -cubeSize/2, 100, 0.f);
+    glm::vec4 boxMax(cubeSize/2, cubeSize/2, cubeSize+100, 0.f);
+    boxMin = viewProj * boxMin;
+    boxMax = viewProj * boxMax;
+    AABoundingBox box(Point3f(boxMin.x, boxMin.y, boxMin.z),
+                      Point3f(boxMax.x, boxMax.y, boxMax.z));
 
     // Iterate through each pixel
     for (int w = 0; w < result.width(); ++w) {
