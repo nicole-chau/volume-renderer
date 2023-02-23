@@ -45,8 +45,8 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
     switch(e->key())
     {
 //    case Qt::Key_Escape : on_actionQuit_Esc_triggered();  break;
-    case Qt::Key_W: rayCast.camera.translateForward(-amount); break;
-    case Qt::Key_S: rayCast.camera.translateForward(amount); break;
+    case Qt::Key_W: rayCast.camera.translateForward(amount); break;
+    case Qt::Key_S: rayCast.camera.translateForward(-amount); break;
     case Qt::Key_A: rayCast.camera.translateRight(-amount); break;
     case Qt::Key_D: rayCast.camera.translateRight(amount); break;
     case Qt::Key_Q: rayCast.camera.translateUp(0.5); break;

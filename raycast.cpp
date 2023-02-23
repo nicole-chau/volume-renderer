@@ -5,8 +5,8 @@
 RayCast::RayCast()
     : camera(Camera(cubeSize, cubeSize))
 {
-    createCube();
-//    createSphere();
+//    createCube();
+    createSphere();
 }
 
 void RayCast::createSphere()
@@ -168,11 +168,6 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
             float density = trilinearInterp(currPos);
 
             // Process voxel value
-            // TODO: update transmittance computation
-
-            // Transmittance is inverse of density T = 1 - p
-//            transmittance -= density;
-
             transmittance *= exp(-stepSize * density);
             color += stepSize * density * transmittance;
 
@@ -237,10 +232,11 @@ QImage RayCast::renderData()
 
     // Initialize bounding box -- size of phantom voxel data
     glm::mat4 viewProj = glm::lookAt(camera.eye, camera.ref, camera.up);
-    glm::vec4 boxMin(-cubeSize/2, -cubeSize/2, 100, 0.f);
-    glm::vec4 boxMax(cubeSize/2, cubeSize/2, cubeSize+100, 0.f);
-//    boxMin = viewProj * boxMin;
-//    boxMax = viewProj * boxMax;
+//    glm::mat4 viewProj = camera.getViewProj();
+    glm::vec4 boxMin(-cubeSize/2, -cubeSize/2, 100, 1.f);
+    glm::vec4 boxMax(cubeSize/2, cubeSize/2, cubeSize+100, 1.f);
+    boxMin = viewProj * boxMin;
+    boxMax = viewProj * boxMax;
     AABoundingBox box(Point3f(boxMin.x, boxMin.y, boxMin.z),
                       Point3f(boxMax.x, boxMax.y, boxMax.z));
 

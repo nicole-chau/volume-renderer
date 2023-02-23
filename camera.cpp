@@ -1,38 +1,6 @@
 #include "camera.h"
 #include "math.h"
 
-//Camera::Camera()
-//    : forward(0.f, 0.f, -1.f),
-//      right(1.f, 0.f, 0.f),
-//      up(0.f, 1.f, 0.f),
-//      fov(45.f),
-//      eye(0.f, 0.f, -10.f),
-//      ref(Point3f(0,0,0)),
-//      nearClip( 0.01),
-//      farClip(100.f),
-//      aspectRatio(1.f),
-//      width(120),
-//      height(120)
-//{
-//    recomputeAttributes();
-//}
-
-//Camera::Camera(int width, int height)
-//    : forward(0.f, 0.f, -1.f),
-//      right(1.f, 0.f, 0.f, 0.f),
-//      up(0.f, 1.f, 0.f, 0.f),
-//      fov(45.f),
-//      eye(0.f, 0.f, -10.f),
-//      ref(Point3f(0,0,0)),
-//      nearClip( 0.01),
-//      farClip(100.f),
-//      aspectRatio(1.f),
-//      width(width),
-//      height(height)
-//{
-//    recomputeAttributes();
-//}
-
 Camera::Camera()
     : Camera(400, 400)
 {
@@ -97,12 +65,16 @@ void Camera::recomputePolarAttributes() {
 
 glm::mat4 Camera::getViewProj()
 {
-    return glm::perspective(glm::radians(fov), width / (float)height, nearClip, farClip) * glm::lookAt(eye, ref, up);
+    glm::mat4 rot = glm::rotate(glm::mat4(), glm::radians(theta), glm::vec3(0,1,0)) * glm::rotate(glm::mat4(), glm::radians(phi), glm::vec3(1,0,0));
+    glm::vec3 eye = glm::vec3(rot * glm::vec4(0, 0, 1.5f, 1));
+    glm::vec3 up = glm::vec3(rot * glm::vec4(0,1,0,0));
+    return glm::perspective(glm::radians(45.f), width/(float)height, 0.01f, 10.f) * glm::lookAt(eye, glm::vec3(0,0,0), up);
+//    return glm::perspective(glm::radians(fov), width / (float)height, nearClip, farClip) * glm::lookAt(eye, ref, up);
 }
 
 /*
 glm::mat4 Camera::viewMatrix() {
-    glm::mat4 orientation(right, up, forward, glm::vec4(0.f, 0.f, 0.f, 1.f));
+    glm::mat4 orientation(glm::vec4(right, 1.f), glm::vec4(up, 1.f), glm::vec4(forward, 1.f), glm::vec4(0.f, 0.f, 0.f, 1.f));
     glm::transpose(orientation);
 
     glm::mat4 translation(1.f);
@@ -110,6 +82,7 @@ glm::mat4 Camera::viewMatrix() {
 
     return orientation * translation;
 }
+
 
 glm::mat4 Camera::projMatrix() {
     glm::mat4 result;
@@ -126,8 +99,12 @@ glm::mat4 Camera::projMatrix() {
 
 void Camera::translateForward(float z) {
 //    eye[2] += z;
-    r += z;
-    recomputePolarAttributes();
+//    r += z;
+//    recomputePolarAttributes();
+
+    glm::vec3 translation = forward * z;
+    eye += translation;
+    ref += translation;
 }
 
 void Camera::translateRight(float x) {
@@ -158,6 +135,13 @@ void Camera::rotateRight(float deg) {
 
     phi += deg;
     recomputePolarAttributes();
+
+//    deg = glm::radians(deg);
+//    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), deg, right);
+//    ref = ref - eye;
+//    ref = glm::vec3(rotation * glm::vec4(ref, 1));
+//    ref = ref + eye;
+//    recomputeAttributes();
 }
 
 void Camera::rotateUp(float deg) {
@@ -167,6 +151,13 @@ void Camera::rotateUp(float deg) {
 
     theta += deg;
     recomputePolarAttributes();
+
+//    deg = glm::radians(deg);
+//    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), deg, up);
+//    ref = ref - eye;
+//    ref = glm::vec3(rotation * glm::vec4(ref, 1));
+//    ref = ref + eye;
+//    recomputeAttributes();
 }
 
 
