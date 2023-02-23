@@ -3,11 +3,7 @@
 #include "math.h"
 
 RayCast::RayCast()
-    : camera(Camera(cubeSize, cubeSize))
-{
-//    createCube();
-    createSphere();
-}
+    : camera(Camera(240, 240)) {}
 
 void RayCast::createSphere()
 {
@@ -221,7 +217,7 @@ int RayCast::clampIndexBounds(int index, int min, int max)
 
 QImage RayCast::renderData()
 {
-    QImage result(cubeSize, cubeSize, QImage::Format_RGB32);
+    QImage result(240, 240, QImage::Format_RGB32);
 //    result = result.scaled(512, 512, Qt::KeepAspectRatio);
     result.fill(qRgb(0.f, 0.f, 0.f));
 

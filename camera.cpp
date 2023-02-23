@@ -99,12 +99,12 @@ glm::mat4 Camera::projMatrix() {
 
 void Camera::translateForward(float z) {
 //    eye[2] += z;
-//    r += z;
-//    recomputePolarAttributes();
+    r += z;
+    recomputePolarAttributes();
 
-    glm::vec3 translation = forward * z;
-    eye += translation;
-    ref += translation;
+//    glm::vec3 translation = forward * z;
+//    eye += translation;
+//    ref += translation;
 }
 
 void Camera::translateRight(float x) {
