@@ -5,12 +5,44 @@
 RayCast::RayCast()
     : camera(Camera(cubeSize, cubeSize))
 {
-    createPhantom();
+    createCube();
+//    createSphere();
+}
+
+void RayCast::createSphere()
+{
+    int center = cubeSize/2;
+    int radius = center * 0.6;
+    Point3f centerPt(center);
+
+    // array (center, center) --> (0,0)
+
+    for (int d = 0; d < cubeSize; ++d) {
+        for (int h = 0; h < cubeSize; ++h) {
+            for (int w = 0; w < cubeSize; ++w) {
+                Point3f circlePt(w, h, d);
+
+                // distance between point and center
+                float distance = glm::abs(glm::distance(circlePt, centerPt));
+                if (distance < radius)
+                {
+                    if (distance < radius * 0.3) {
+                        phantom[d][h][w] = 0.5;
+                    } else {
+                        phantom[d][h][w] = 0.1;
+                    }
+                } else
+                {
+                    phantom[d][h][w] = 0;
+                }
+            }
+        }
+    }
 }
 
 // Phantom size should just correspond to pixel locations
 // bottom left front corner (-16,-16, 20)
-void RayCast::createPhantom()
+void RayCast::createCube()
 {
     // Create phantom cube for testing
     int depth = cubeSize;
@@ -23,6 +55,7 @@ void RayCast::createPhantom()
     int min2 = cubeSize * 0.4;
     int max2 = cubeSize * 0.6;
 
+    // set density values
     for (int d = 0; d < depth; ++d) {
         for (int h = 0; h < height; ++h) {
             for (int w = 0; w < width; ++w) {
@@ -35,7 +68,6 @@ void RayCast::createPhantom()
                         phantom[w][h][d] = 0.6;
                     } else
                     {
-                        // set density to 0.2
                         phantom[w][h][d] = 0.1;
                     }
                 } else

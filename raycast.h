@@ -18,7 +18,8 @@ class RayCast
 public:
     RayCast();
     QImage renderData();
-    void createPhantom();
+    void createCube();
+    void createSphere();
 
 private:
     // width x height x depth (x, y, z)
