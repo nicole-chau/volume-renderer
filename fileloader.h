@@ -16,13 +16,22 @@ public:
     ~FileLoader();
     void processPixelData();
 
-    double getRescaleIntercept();
-    double getRescaleSlope();
+
 
 private:
-    std::string directory; // directory storing series of DICOM files
+    void getColumns(DcmFileFormat fileFormat);
+    void getRows(DcmFileFormat fileFormat);
+    void getRescaleIntercept(DcmFileFormat fileFormat);
+    void getRescaleSlope(DcmFileFormat fileFormat);
+
+//    std::string directory; // directory storing series of DICOM files
     std::vector<std::string> files;
 
+    Uint16 width;
+    Uint16 height;
+    int numPixels;
+    double rescaleIntercept;
+    double rescaleSlope;
 };
 
 #endif // FILELOADER_H
