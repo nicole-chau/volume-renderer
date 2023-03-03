@@ -17,15 +17,20 @@ class RayCast
 {
 public:
     RayCast();
+    RayCast(std::vector<std::vector<double>> data);
     QImage renderData();
     void createCube();
     void createSphere();
+
 
 private:
     // width x height x depth (x, y, z)
     int cubeSize = 120;
 
     float phantom[120][120][120] = {{{}}};
+
+    std::vector<std::vector<double>> data;
+
     Camera camera;
 
     // Compute near and far intersections of ray with bounding box

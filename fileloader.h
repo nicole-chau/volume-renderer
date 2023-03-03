@@ -14,17 +14,16 @@ class FileLoader
 public:
     FileLoader(std::string directory);
     ~FileLoader();
-    void processPixelData();
 
-
+    std::vector<std::vector<double>> data;
 
 private:
     void getColumns(DcmFileFormat fileFormat);
     void getRows(DcmFileFormat fileFormat);
     void getRescaleIntercept(DcmFileFormat fileFormat);
     void getRescaleSlope(DcmFileFormat fileFormat);
+    void processPixelData();
 
-//    std::string directory; // directory storing series of DICOM files
     std::vector<std::string> files;
 
     Uint16 width;

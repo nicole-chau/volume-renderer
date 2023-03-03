@@ -32,6 +32,9 @@ FileLoader::FileLoader(std::string directory)
 
         numPixels = width * height;
     }
+
+    // Process pixel data
+    processPixelData();
 }
 
 FileLoader::~FileLoader() {}
@@ -77,7 +80,7 @@ void FileLoader::getRescaleSlope(DcmFileFormat fileFormat)
     DcmTagKey key = DCM_RescaleSlope;
     if (fileFormat.getDataset()->findAndGetFloat64(key, rescaleSlope).good())
     {
-        qDebug() << "Rescale Slope: " << rescaleSlope;
+//        qDebug() << "Rescale Slope: " << rescaleSlope;
         return;
     } else
     {
@@ -97,6 +100,9 @@ void FileLoader::processPixelData()
         {
             if (image->getStatus() == EIS_Normal)
             {
+                // Initialize vector for current slice
+                std::vector<double> slice;
+
                 // Get pixel data
                 short *pixelData = (short *)(image->getOutputData(16 /* bits per sample */));
 
@@ -107,8 +113,12 @@ void FileLoader::processPixelData()
                         // Convert each pixel to Hounsfield unit:
                         // hu = pixel_value * slope + intercept
                         double hu = pixelData[i] * rescaleSlope + rescaleIntercept;
+                        slice.push_back(hu);
                     }
                 }
+
+                data.push_back(slice);
+
             } else
             {
                 qDebug() << "Cannot load file " << count;

@@ -3,7 +3,12 @@
 #include "math.h"
 
 RayCast::RayCast()
-    : camera(Camera(240, 240)) {}
+    : data({}), camera(Camera(240, 240))
+{}
+
+RayCast::RayCast(std::vector<std::vector<double>> data)
+    : data(data), camera(Camera(240, 240))
+{}
 
 void RayCast::createSphere()
 {

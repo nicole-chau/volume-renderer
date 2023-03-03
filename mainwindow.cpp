@@ -37,9 +37,7 @@ void MainWindow::slot_loadFile() {
                                                     QFileDialog::ShowDirsOnly);
 
     FileLoader fileLoader(directoryName.toStdString());
-    fileLoader.processPixelData();
-//    fileLoader.getRescaleIntercept();
-//    fileLoader.getRescaleSlope();
+    RayCast rayCast(fileLoader.data);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *e)
