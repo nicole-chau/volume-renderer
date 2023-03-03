@@ -18,10 +18,7 @@ FileLoader::FileLoader(std::string directory)
     sort(files.begin(), files.end());
 }
 
-FileLoader::~FileLoader()
-{
-
-}
+FileLoader::~FileLoader() {}
 
 double FileLoader::getRescaleIntercept()
 {
@@ -37,11 +34,12 @@ double FileLoader::getRescaleIntercept()
         DcmTagKey key = DCM_RescaleIntercept;
         if (fileformat.getDataset()->findAndGetFloat64(key, rescaleIntercept).good())
         {
+            qDebug() << "Rescale Intercept: " << rescaleIntercept;
             return rescaleIntercept;
         }
     }
 
-    return 0.0;
+    return -1024.0;
 }
 
 double FileLoader::getRescaleSlope()
@@ -63,7 +61,7 @@ double FileLoader::getRescaleSlope()
         }
     }
 
-    return 0;
+    return 1.0;
 }
 
 void FileLoader::processPixelData()
@@ -76,40 +74,38 @@ void FileLoader::processPixelData()
         {
             if (image->getStatus() == EIS_Normal)
             {
-//                Uint8 *pixelData = (Uint8 *)(image->getOutputData(8 /* bits per sample */));
+                // Get image size aka number of pixels
+                DcmFileFormat fileFormat;
+                OFCondition status = fileFormat.loadFile(file.c_str());
+                Uint16 height = 0;
+                Uint16 width = 0;
 
-                // getInterData() returns original pixel data which includes Houndsfield units
-                const DiPixel *interData = image->getInterData();
+                fileFormat.getDataset()->findAndGetUint16(DCM_Rows, height).good();
+                fileFormat.getDataset()->findAndGetUint16(DCM_Columns, width).good();
 
-                if (interData != NULL)
+                int numPixels = height * width;
+
+                // Get pixel data
+                short *pixelData = (short *)(image->getOutputData(16 /* bits per sample */));
+
+                if (pixelData != NULL)
                 {
-                    // Process pixel data
-//                    qInfo() << "number of pixels: " << interData->getCount();
-
-                    int samplesPerPixel = interData->getPlanes(); // returns 1 --> monochromatic
-
-                    // Get pointer to internal raw representation of image data
-                    const void *data = interData->getData();
-
-                    // Each pixel is a short (signed 16 bit integer)
-                    int rep = interData->getRepresentation();
-                    if (rep == EPR_Sint16)
+                    for (int i = 0; i < numPixels; ++i)
                     {
-                        qDebug() << ("EPR_Sint16");
+                        // Convert each pixel to Hounsfield unit
+                        // hu = pixel_value * slope + intercept
+                        double slope = getRescaleSlope();
+                        double intercept = getRescaleIntercept();
+                        double hu = pixelData[i] * slope + intercept;
                     }
 
-                    std::vector<short> pixelData;
-
-//                    DiMonoPixelTemplate<Sint16> pixelTemplate = new DiMonoPixelTemplate<Sint16>
-
-
-//                    qDebug() << rep;
+                        qDebug() << pixelData[0];
 
 
                 }
             } else
             {
-                std::cout << "cannot load file: " << std::endl;
+                std::cout << "cannot load file " << std::endl;
             }
         }
     }
