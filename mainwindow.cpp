@@ -38,7 +38,8 @@ void MainWindow::slot_loadFile() {
 
     FileLoader fileLoader(directoryName.toStdString());
 //    fileLoader.processPixelData();
-    fileLoader.getTags();
+    fileLoader.getRescaleIntercept();
+    fileLoader.getRescaleSlope();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *e)

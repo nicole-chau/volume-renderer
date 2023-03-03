@@ -16,11 +16,13 @@ public:
     ~FileLoader();
     void processPixelData();
 
-    void getTags();
+    double getRescaleIntercept();
+    double getRescaleSlope();
 
 private:
     std::string directory; // directory storing series of DICOM files
     std::vector<std::string> files;
+
 };
 
 #endif // FILELOADER_H

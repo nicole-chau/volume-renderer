@@ -23,21 +23,47 @@ FileLoader::~FileLoader()
 
 }
 
-void FileLoader::getTags()
+double FileLoader::getRescaleIntercept()
 {
     std::string file = files[0];
 
     DcmFileFormat fileformat;
     OFCondition status = fileformat.loadFile(file.c_str());
+
+    double rescaleIntercept = 0.0;
+
     if (status.good())
     {
-        OFString patientName;
-        DcmTagKey key = DCM_PatientName;
-        if (fileformat.getDataset()->findAndGetOFString(key, patientName).good())
+        DcmTagKey key = DCM_RescaleIntercept;
+        if (fileformat.getDataset()->findAndGetFloat64(key, rescaleIntercept).good())
         {
-            qDebug() << "Patient's Name: " << patientName.c_str();
+            return rescaleIntercept;
         }
     }
+
+    return 0.0;
+}
+
+double FileLoader::getRescaleSlope()
+{
+    std::string file = files[0];
+
+    DcmFileFormat fileformat;
+    OFCondition status = fileformat.loadFile(file.c_str());
+
+    double rescaleSlope = 0.0;
+
+    if (status.good())
+    {
+        DcmTagKey key = DCM_RescaleSlope;
+        if (fileformat.getDataset()->findAndGetFloat64(key, rescaleSlope).good())
+        {
+            qDebug() << "Rescale Slope: " << rescaleSlope;
+            return rescaleSlope;
+        }
+    }
+
+    return 0;
 }
 
 void FileLoader::processPixelData()
