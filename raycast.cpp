@@ -58,12 +58,15 @@ void RayCast::createCube()
                 if ((d >= min && h >= min && w >= min)
                     && (d <= max && h <= max && w <= max))
                 {
+                    // define cube boundaires
                     if ((d >= min2 && h >= min2 && w >= min2)
                             && (d <= max2 && h <= max2 && w <= max2))
                     {
+                        // define inner ring
                         phantom[w][h][d] = 0.6;
                     } else
                     {
+                        // define outer ring
                         phantom[w][h][d] = 0.1;
                     }
                 } else
@@ -71,11 +74,15 @@ void RayCast::createCube()
                     phantom[w][h][d] = 0;
                 }
 
+                // create hole in cube
+                if ((w >= min2 && h >= min2) && (w <= max2 && h <= max2))
+                {
+                    phantom[w][h][d] = 0;
+                }
             }
         }
     }
 }
-
 
 // Compute near and far intersections of ray with bounding box
 bool RayCast::rayBoxIntersect(Ray ray, AABoundingBox box, float &tNear, float &tFar) {
@@ -231,6 +238,7 @@ QImage RayCast::renderData()
 //    glm::mat4 viewProj = camera.getViewProj();
     glm::vec4 boxMin(-cubeSize/2, -cubeSize/2, 100, 1.f);
     glm::vec4 boxMax(cubeSize/2, cubeSize/2, cubeSize+100, 1.f);
+//    boxMin = glm::vec4(-);
     boxMin = viewProj * boxMin;
     boxMax = viewProj * boxMax;
     AABoundingBox box(Point3f(boxMin.x, boxMin.y, boxMin.z),
