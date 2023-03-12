@@ -7,8 +7,23 @@ RayCast::RayCast()
 {}
 
 RayCast::RayCast(std::vector<std::vector<double>> data)
-    : data(data), camera(Camera(240, 240))
-{}
+    : data(data),
+      camera(Camera(240, 240))
+{
+    width = 100;
+    height = 100;
+    depth = 20;
+}
+
+
+RayCast::RayCast(int width, int height, std::vector<std::vector<double>> data)
+    : width(width),
+      height(height),
+      data(data),
+      camera(Camera(240, 240))
+{
+    depth = data.size();
+}
 
 void RayCast::createSphere()
 {
@@ -87,6 +102,38 @@ void RayCast::createCube()
             }
         }
     }
+}
+
+void RayCast::createCubeVector()
+{
+    int min = cubeSize * 0.2;
+    int max = cubeSize * 0.8;
+
+//    int min2 = cubeSize * 0.4;
+//    int max2 = cubeSize * 0.6;
+
+    for (int i = 0; i < cubeSize; ++i)
+    {
+        std::vector<double> slice;
+
+        for (int j = 0; j < cubeSize * cubeSize; ++j)
+        {
+            if (j >= (min + cubeSize * min) && j <= (max + cubeSize * max))
+            {
+                slice.push_back(0.5);
+            } else
+            {
+                slice.push_back(0.5);
+            }
+        }
+
+        phantomVector.push_back(slice);
+    }
+
+    data = phantomVector;
+    width = cubeSize;
+    height = cubeSize;
+    depth = cubeSize;
 }
 
 // Compute near and far intersections of ray with bounding box
@@ -178,7 +225,6 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
             // Process voxel value
             transmittance *= exp(-stepSize * density);
             color += stepSize * density * transmittance;
-
         }
     }
 
@@ -190,34 +236,41 @@ float RayCast::trilinearInterp(Point3f pos)
 {
     // TODO: Map to voxel data indices
     // (0, 0, 20) --> (16, 16, 0)
-    float x = pos.x + cubeSize / 2;
-    float y = pos.y + cubeSize /2;
-    float z = pos.z - 20;
+    float x = pos.x + width / 2;
+    float y = pos.y + height / 2;
+    float z = pos.z - 100;
 
-    int min = 0;
-    int max = cubeSize - 1;
+    // Clamp to index bounds
+    int xf = clampIndexBounds(std::floor(x), 0, width - 1);
+    int yf = clampIndexBounds(std::floor(y), 0, height - 1);
+    int zf = clampIndexBounds(std::floor(z), 0, depth - 1);
 
-    int xf = clampIndexBounds(std::floor(x), min, max);
-    int yf = clampIndexBounds(std::floor(y), min, max);
-    int zf = clampIndexBounds(std::floor(z), min, max);
-
-    int xc = clampIndexBounds(std::ceil(x), min, max);
-    int yc = clampIndexBounds(std::ceil(y), min, max);
-    int zc = clampIndexBounds(std::ceil(z), min, max);
+    int xc = clampIndexBounds(std::ceil(x), 0, width - 1);
+    int yc = clampIndexBounds(std::ceil(y), 0, height - 1);
+    int zc = clampIndexBounds(std::ceil(z), 0, depth - 1);
 
     // Fractional part of considered resampling location's position
     float xfrac = x - std::floor(x);
     float yfrac = y - std::floor(y);
     float zfrac = z - std::floor(z);
 
-    float result = phantom[xf][yf][zf] * (1 - xfrac) * (1 - yfrac) * (1 - zfrac)
-            + phantom[xc][yf][zf] * xfrac * (1 - yfrac) * (1 - zfrac)
-            + phantom[xf][yc][zf] * (1 - xfrac) * yfrac * (1 - zfrac)
-            + phantom[xf][yf][zc] * (1 - xfrac) * (1 - yfrac) * zfrac
-            + phantom[xc][yf][zc] * xfrac * (1 - yfrac) * zfrac
-            + phantom[xf][yc][zc] * (1 - xfrac) * yfrac * zfrac
-            + phantom[xc][yc][zf] * xfrac * yfrac * (1 - zfrac)
-            + phantom[xc][yc][zc] * xfrac * yfrac * zfrac;
+//    float result = phantom[xf][yf][zf] * (1 - xfrac) * (1 - yfrac) * (1 - zfrac)
+//            + phantom[xc][yf][zf] * xfrac * (1 - yfrac) * (1 - zfrac)
+//            + phantom[xf][yc][zf] * (1 - xfrac) * yfrac * (1 - zfrac)
+//            + phantom[xf][yf][zc] * (1 - xfrac) * (1 - yfrac) * zfrac
+//            + phantom[xc][yf][zc] * xfrac * (1 - yfrac) * zfrac
+//            + phantom[xf][yc][zc] * (1 - xfrac) * yfrac * zfrac
+//            + phantom[xc][yc][zf] * xfrac * yfrac * (1 - zfrac)
+//            + phantom[xc][yc][zc] * xfrac * yfrac * zfrac;
+
+    float result = data.at(zf).at(xf + cubeSize * yf) * (1 - xfrac) * (1 - yfrac) * (1 - zfrac)
+            + data.at(zf).at(xc + cubeSize * yf) * xfrac * (1 - yfrac) * (1 - zfrac)
+            + data.at(zf).at(xf + cubeSize * yc) * (1 - xfrac) * yfrac * (1 - zfrac)
+            + data.at(zc).at(xf + cubeSize * yf) * (1 - xfrac) * (1 - yfrac) * zfrac
+            + data.at(zc).at(xc + cubeSize * yf) * xfrac * (1 - yfrac) * zfrac
+            + data.at(zc).at(xf + cubeSize * yc) * (1 - xfrac) * yfrac * zfrac
+            + data.at(zf).at(xc + cubeSize * yc) * xfrac * yfrac * (1 - zfrac)
+            + data.at(zc).at(xc + cubeSize * yc) * xfrac * yfrac * zfrac;
 
     return result;
 }
@@ -241,9 +294,11 @@ QImage RayCast::renderData()
     // Initialize bounding box -- size of phantom voxel data
     glm::mat4 viewProj = glm::lookAt(camera.eye, camera.ref, camera.up);
 //    glm::mat4 viewProj = camera.getViewProj();
-    glm::vec4 boxMin(-cubeSize/2, -cubeSize/2, 100, 1.f);
-    glm::vec4 boxMax(cubeSize/2, cubeSize/2, cubeSize+100, 1.f);
-//    boxMin = glm::vec4(-);
+//    glm::vec4 boxMin(-cubeSize/2, -cubeSize/2, 100, 1.f);
+//    glm::vec4 boxMax(cubeSize/2, cubeSize/2, cubeSize+100, 1.f);
+
+    glm::vec4 boxMin(-width / 2, -height / 2, 100, 1.f);
+    glm::vec4 boxMax(width / 2, height / 2, 100 + depth, 1.f);
     boxMin = viewProj * boxMin;
     boxMax = viewProj * boxMax;
     AABoundingBox box(Point3f(boxMin.x, boxMin.y, boxMin.z),

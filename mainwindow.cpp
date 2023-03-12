@@ -11,8 +11,9 @@ MainWindow::MainWindow(QWidget *parent)
     setFocusPolicy(Qt::StrongFocus);
     connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(slot_loadFile()));
 
-   rayCast.createCube();
+//   rayCast.createCube();
 //   rayCast.createSphere();
+   rayCast.createCubeVector();
    renderedImage = rayCast.renderData();
    DisplayQImage(renderedImage);
 }
@@ -37,7 +38,11 @@ void MainWindow::slot_loadFile() {
                                                     QFileDialog::ShowDirsOnly);
 
     FileLoader fileLoader(directoryName.toStdString());
+//    int width = fileLoader.width;
     RayCast rayCast(fileLoader.data);
+//    RayCast rayCast((int)fileLoader.width, (int)fileLoader.height, fileLoader.data);
+//    renderedImage = rayCast.renderData();
+//    DisplayQImage(renderedImage);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *e)

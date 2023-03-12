@@ -18,16 +18,23 @@ class RayCast
 public:
     RayCast();
     RayCast(std::vector<std::vector<double>> data);
+    RayCast(int width, int height, std::vector<std::vector<double>> data);
     QImage renderData();
     void createCube();
     void createSphere();
 
+    void createCubeVector();
 
 private:
     // width x height x depth (x, y, z)
     int cubeSize = 120;
 
     float phantom[120][120][120] = {{{}}};
+    std::vector<std::vector<double>> phantomVector;
+
+    int width;
+    int height;
+    int depth;
 
     std::vector<std::vector<double>> data;
 

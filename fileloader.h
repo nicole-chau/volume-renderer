@@ -16,6 +16,8 @@ public:
     ~FileLoader();
 
     std::vector<std::vector<double>> data;
+    Uint16 width;
+    Uint16 height;
 
 private:
     void getColumns(DcmFileFormat fileFormat);
@@ -26,8 +28,6 @@ private:
 
     std::vector<std::string> files;
 
-    Uint16 width;
-    Uint16 height;
     int numPixels;
     double rescaleIntercept;
     double rescaleSlope;
