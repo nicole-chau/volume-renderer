@@ -1,4 +1,4 @@
-#pragma once
+ #pragma once
 
 #include "globals.h"
 #include "ray.h"
@@ -17,13 +17,16 @@ class RayCast
 {
 public:
     RayCast();
-    RayCast(std::vector<std::vector<double>> data);
+    RayCast(const std::vector<std::vector<double>>& data);
     RayCast(int width, int height, std::vector<std::vector<double>> data);
-    QImage renderData();
+
+    void loadData(int width, int height, const std::vector<std::vector<double>>& data);
+
     void createCube();
     void createSphere();
-
     void createCubeVector();
+
+    QImage renderData();
 
 private:
     // width x height x depth (x, y, z)

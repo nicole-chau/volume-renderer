@@ -3,10 +3,11 @@
 #include "math.h"
 
 RayCast::RayCast()
-    : data({}), camera(Camera(240, 240))
+    : width(240), height(240), depth(240), data({}), camera(Camera(240, 240))
 {}
 
-RayCast::RayCast(std::vector<std::vector<double>> data)
+/*
+RayCast::RayCast(const std::vector<std::vector<double>>& data)
     : data(data),
       camera(Camera(240, 240))
 {
@@ -19,11 +20,22 @@ RayCast::RayCast(std::vector<std::vector<double>> data)
 RayCast::RayCast(int width, int height, std::vector<std::vector<double>> data)
     : width(width),
       height(height),
-      data(data),
+      data(std::move(data)),
       camera(Camera(240, 240))
 {
     depth = data.size();
 }
+*/
+
+void RayCast::loadData(int width, int height, const std::vector<std::vector<double>>& data)
+{
+    this->width = width;
+    this->height = height;
+    this->data = data;
+    this->depth = data.size();
+}
+
+
 
 void RayCast::createSphere()
 {

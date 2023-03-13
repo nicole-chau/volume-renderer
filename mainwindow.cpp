@@ -38,11 +38,10 @@ void MainWindow::slot_loadFile() {
                                                     QFileDialog::ShowDirsOnly);
 
     FileLoader fileLoader(directoryName.toStdString());
-//    int width = fileLoader.width;
-    RayCast rayCast(fileLoader.data);
-//    RayCast rayCast((int)fileLoader.width, (int)fileLoader.height, fileLoader.data);
-//    renderedImage = rayCast.renderData();
-//    DisplayQImage(renderedImage);
+    rayCast.loadData(fileLoader.width, fileLoader.height, fileLoader.data);
+
+    renderedImage = rayCast.renderData();
+    DisplayQImage(renderedImage);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *e)
