@@ -88,6 +88,38 @@ void FileLoader::getRescaleSlope(DcmFileFormat fileFormat)
     }
 }
 
+/*
+void FileLoader::getPixelData()
+{
+    for (const std::string &file : files) {
+        DicomImage *image = new DicomImage(file.c_str());
+
+        if (image != NULL)
+        {
+            if (image->getStatus() == EIS_Normal)
+            {
+                // Initialize vector for current slice
+                std::vector<double> slice;
+
+                // Get pixel data (16 bits per sample)
+                short *pixelData = (short *)(image->getOutputData(16));
+
+                if (pixelData != NULL)
+                {
+                    for (int i = 0; i < numPixels; ++i)
+                    {
+
+                    }
+                }
+
+                data.push_back(slice);
+
+            }
+        }
+    }
+}
+*/
+
 void FileLoader::processPixelData()
 {
     int count = 1;
@@ -104,18 +136,26 @@ void FileLoader::processPixelData()
                 std::vector<double> slice;
 
                 // Get pixel data
-                short *pixelData = (short *)(image->getOutputData(16 /* bits per sample */));
+                Uint16 *pixelData16 = (Uint16 *)(image->getOutputData(16 /* bits per sample */));
 
                 if (pixelData != NULL)
                 {
                     for (int i = 0; i < numPixels; ++i)
                     {
+                        pixelData[i] = pixelData16[i] >> 8;
                         // Convert each pixel to Hounsfield unit:
                         // hu = pixel_value * slope + intercept
-                        double hu = pixelData[i] * rescaleSlope + rescaleIntercept;
+                        double hu = pixelData[i];
+//                        double hu = pixelData[i] * rescaleSlope + rescaleIntercept;
                         slice.push_back(hu);
                     }
                 }
+
+
+                // TODO: min and max are both 25...
+
+                double min = *min_element(std::begin(slice), std::end(slice));
+                double max = *max_element(std::begin(slice), std::end(slice));
 
                 data.push_back(slice);
 

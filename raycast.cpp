@@ -3,7 +3,7 @@
 #include "math.h"
 
 RayCast::RayCast()
-    : width(240), height(240), depth(240), data({}), camera(Camera(240, 240))
+    : width(512), height(512), depth(512), data({}), camera(Camera(512, 512))
 {}
 
 /*
@@ -234,13 +234,21 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
             // Trilinearly interpolate voxel value at currPos
             float density = trilinearInterp(currPos);
 
+            // Map HU range [-1000, 1000] to [0, 1]
+//            density /= 1000;
+//            density += 1;
+//            density /= 2;
+
             // Process voxel value
             transmittance *= exp(-stepSize * density);
-            color += stepSize * density * transmittance;
+//            color += stepSize * density * transmittance;
+            color = Vector3f(density);
         }
     }
 
-    color = Vector3f(glm::abs(1.f - transmittance));
+
+//    color = Vector3f(glm::abs(1.f - transmittance));
+
     return color;
 }
 
@@ -294,7 +302,7 @@ int RayCast::clampIndexBounds(int index, int min, int max)
 
 QImage RayCast::renderData()
 {
-    QImage result(240, 240, QImage::Format_RGB32);
+    QImage result(512, 512, QImage::Format_RGB32);
 //    result = result.scaled(512, 512, Qt::KeepAspectRatio);
     result.fill(qRgb(0.f, 0.f, 0.f));
 
@@ -309,8 +317,8 @@ QImage RayCast::renderData()
 //    glm::vec4 boxMin(-cubeSize/2, -cubeSize/2, 100, 1.f);
 //    glm::vec4 boxMax(cubeSize/2, cubeSize/2, cubeSize+100, 1.f);
 
-    glm::vec4 boxMin(-width / 2, -height / 2, 100, 1.f);
-    glm::vec4 boxMax(width / 2, height / 2, 100 + depth, 1.f);
+    glm::vec4 boxMin(-width / 2, -height / 2, 500, 1.f);
+    glm::vec4 boxMax(width / 2, height / 2, 500 + depth, 1.f);
     boxMin = viewProj * boxMin;
     boxMax = viewProj * boxMax;
     AABoundingBox box(Point3f(boxMin.x, boxMin.y, boxMin.z),
@@ -341,7 +349,7 @@ QImage RayCast::renderData()
             }
 
             // Set pixel color
-            color *= 255;
+//            color *= 255;
             result.setPixelColor(w, h, qRgb(color.r, color.g, color.b));
         }
     }

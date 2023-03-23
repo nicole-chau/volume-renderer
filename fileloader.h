@@ -19,12 +19,16 @@ public:
     Uint16 width;
     Uint16 height;
 
+    Uint8 *pixelData;
+
 private:
     void getColumns(DcmFileFormat fileFormat);
     void getRows(DcmFileFormat fileFormat);
     void getRescaleIntercept(DcmFileFormat fileFormat);
     void getRescaleSlope(DcmFileFormat fileFormat);
     void processPixelData();
+
+    void getPixelData();
 
     std::vector<std::string> files;
 
