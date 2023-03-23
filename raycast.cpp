@@ -35,8 +35,6 @@ void RayCast::loadData(int width, int height, const std::vector<std::vector<doub
     this->depth = data.size();
 }
 
-
-
 void RayCast::createSphere()
 {
     int center = cubeSize/2;
@@ -130,11 +128,12 @@ void RayCast::createCubeVector()
 
         for (int j = 0; j < cubeSize * cubeSize; ++j)
         {
-            if (j >= (min + cubeSize * min) && j <= (max + cubeSize * max))
-            {
-                slice.push_back(0.5);
-            } else
-            {
+            // (x, y) -> [x + W * y]
+            if (j <= (cubeSize * min) || j >= (cubeSize * max + 1)) {
+                slice.push_back(0.1);
+            } else if (j % cubeSize < min || j % cubeSize > max) {
+                slice.push_back(0.1);
+            } else {
                 slice.push_back(0.5);
             }
         }
@@ -241,13 +240,12 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
 
             // Process voxel value
             transmittance *= exp(-stepSize * density);
-//            color += stepSize * density * transmittance;
-            color = Vector3f(density);
+            color += stepSize * density * transmittance;
         }
     }
 
 
-//    color = Vector3f(glm::abs(1.f - transmittance));
+    color = Vector3f(glm::abs(1.f - transmittance));
 
     return color;
 }
@@ -317,8 +315,8 @@ QImage RayCast::renderData()
 //    glm::vec4 boxMin(-cubeSize/2, -cubeSize/2, 100, 1.f);
 //    glm::vec4 boxMax(cubeSize/2, cubeSize/2, cubeSize+100, 1.f);
 
-    glm::vec4 boxMin(-width / 2, -height / 2, 500, 1.f);
-    glm::vec4 boxMax(width / 2, height / 2, 500 + depth, 1.f);
+    glm::vec4 boxMin(-width / 2, -height / 2, 100, 1.f);
+    glm::vec4 boxMax(width / 2, height / 2, 100 + depth, 1.f);
     boxMin = viewProj * boxMin;
     boxMax = viewProj * boxMax;
     AABoundingBox box(Point3f(boxMin.x, boxMin.y, boxMin.z),
@@ -349,7 +347,7 @@ QImage RayCast::renderData()
             }
 
             // Set pixel color
-//            color *= 255;
+            color *= 255;
             result.setPixelColor(w, h, qRgb(color.r, color.g, color.b));
         }
     }
