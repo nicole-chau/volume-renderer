@@ -29,10 +29,18 @@ RayCast::RayCast(int width, int height, std::vector<std::vector<double>> data)
 
 void RayCast::loadData(int width, int height, const std::vector<std::vector<double>>& data)
 {
+    // Load data and data size properties
     this->width = width;
     this->height = height;
     this->data = data;
     this->depth = data.size();
+
+    // Initialize bounding box
+    glm::vec4 boxMin = glm::vec4(0.f ,0.f ,0.f ,1.f);
+    glm::vec4 boxMax = glm::vec4(width, height, depth, 1.f);
+    box = BoundingBox(boxMin, boxMax);
+//    this->boxToWorld = glm::translate(glm::mat4(), glm::vec3(-width/2, -height/2, 100.0f));
+//    this->worldToBox = glm::inverse(boxToWorld);
 }
 
 void RayCast::createSphere()
@@ -129,9 +137,9 @@ void RayCast::createCubeVector()
         for (int j = 0; j < cubeSize * cubeSize; ++j)
         {
             // (x, y) -> [x + W * y]
-            if (j <= (cubeSize * min) || j >= (cubeSize * max + 1)) {
+            if ((j <= (cubeSize * min) || j >= (cubeSize * max + 1)) && (i < min || i > max)){
                 slice.push_back(0.1);
-            } else if (j % cubeSize < min || j % cubeSize > max) {
+            } else if ((j % cubeSize < min || j % cubeSize > max) && (i < min || i < max)) {
                 slice.push_back(0.1);
             } else {
                 slice.push_back(0.5);
@@ -145,14 +153,19 @@ void RayCast::createCubeVector()
     width = cubeSize;
     height = cubeSize;
     depth = cubeSize;
+
+    glm::vec4 boxMin = glm::vec4(0.f, 0.f, 0.f, 1.f);
+    glm::vec4 boxMax = glm::vec4 (width, height, depth, 1.f);
+    box = BoundingBox(boxMin, boxMax);
+
 }
 
 // Compute near and far intersections of ray with bounding box
-bool RayCast::rayBoxIntersect(Ray ray, AABoundingBox box, float &tNear, float &tFar) {
-    /*
+bool RayCast::rayBoxIntersect(Ray ray, float &tNear, float &tFar) {
     // X Plane
+    /*
     float xo = ray.origin.x;
-    float xd = ray.direction.x;
+    float xd = direction.x;
     if (xd != 0)
     {
         float txMin = (box.min.x - xo) / xd;
@@ -167,7 +180,7 @@ bool RayCast::rayBoxIntersect(Ray ray, AABoundingBox box, float &tNear, float &t
 
     // Y Plane
     float yo = ray.origin.y;
-    float yd = ray.direction.y;
+    float yd = direction.y;
     if (yd != 0)
     {
         float tyMin = (box.min.y - yo) / yd;
@@ -182,10 +195,10 @@ bool RayCast::rayBoxIntersect(Ray ray, AABoundingBox box, float &tNear, float &t
 
     // Z Plane
     float zo = ray.origin.z;
-    float zd = ray.direction.z;
+    float zd = direction.z;
     if (zd != 0)
     {
-        float tzMin = (box.min.z - zo) / zd;
+        float tzMin = (box.min.z - zo) / zd; // distance from zo to z point of intersection
         float tzMax = (box.max.z - zo) / zd;
         if (tzMin > tzMax)
         {
@@ -195,7 +208,6 @@ bool RayCast::rayBoxIntersect(Ray ray, AABoundingBox box, float &tNear, float &t
         tFar = tzMax < tFar ? tzMax : tFar;
     }
     */
-
     Point3f tMin = (box.min - ray.origin) / ray.direction;
     Point3f tMax = (box.max - ray.origin) / ray.direction;
     Point3f t1 = glm::min(tMin, tMax);
@@ -207,13 +219,66 @@ bool RayCast::rayBoxIntersect(Ray ray, AABoundingBox box, float &tNear, float &t
     return tFar > tNear;
 }
 
+bool RayCast::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLength, float *out_dist, glm::vec3 *out_currPos) {
+    glm::ivec3 currCell = glm::ivec3(glm::floor(rayOrigin));
+    rayDirection = glm::normalize(rayDirection); // Now all t values represent world dist.
+
+//    float curr_t = 0.f;
+//    while(curr_t < maxLength) {
+        float min_t = glm::sqrt(3.f);
+        float interfaceAxis = -1; // Track axis for which t is smallest
+        for (int i = 0; i < 3; ++i) { // Iterate over the three axes
+            if (rayDirection[i] != 0) { // Is ray parallel to axis i?
+                float offset = glm::max(0.f, glm::sign(rayDirection[i])); // See slide 5
+                // If the player is *exactly* on an interface then
+                // they'll never move if they're looking in a negative direction
+                if (currCell[i] == rayOrigin[i] && offset == 0.f) {
+                    offset = -1.f;
+                }
+                int nextIntercept = currCell[i] + offset;
+                float axis_t = (nextIntercept - rayOrigin[i]) / rayDirection[i];
+                axis_t = glm::min(axis_t, maxLength); // Clamp to max len to avoid super out of bounds errors
+                if(axis_t < min_t) {
+                    min_t = axis_t;
+                    interfaceAxis = i;
+                }
+            }
+        }
+
+        if(interfaceAxis == -1) {
+            throw std::out_of_range("interfaceAxis was -1 after the for loop in gridMarch!");
+        }
+//        curr_t += min_t; // min_t is declared in slide 7 algorithm
+        rayOrigin += rayDirection * min_t;
+        glm::ivec3 offset = glm::ivec3(0,0,0);
+        // Sets it to 0 if sign is +, -1 if sign is -
+        offset[interfaceAxis] = glm::min(0.f, glm::sign(rayDirection[interfaceAxis]));
+        currCell = glm::ivec3(glm::floor(rayOrigin)) + offset;
+
+        *out_currPos = currCell;
+//        *out_dist = glm::min(maxLength, curr_t);
+        return true;
+
+        // If currCell contains something other than EMPTY, return
+        // curr_t
+//        BlockType cellType = terrain.getBlockAt(currCell.x, currCell.y, currCell.z);
+//        if(cellType != EMPTY) {
+//            *out_blockHit = currCell;
+//            *out_dist = glm::min(maxLen, curr_t);
+//            return true;
+//        }
+//    }
+//    *out_dist = glm::min(maxLength, curr_t);
+    return false;
+}
+
 Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
     float stepSize = 1; // TODO: update
 
     Point3f start = ray.origin + (ray.direction * tNear);
     Point3f end = ray.origin + (ray.direction * tFar);
 
-    Point3f currPos = start;
+    glm::vec3 currPos = start;
 
     // Initialize transmittance
     Color3f color(0.f);
@@ -224,23 +289,33 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
     float endLength = glm::distance(end, start);
     while (currLength < endLength)
     {
-        // Step along ray
-        currPos = currPos + (ray.direction * stepSize);
+        // Grid march
+        float distance;
+        bool hitCell = gridMarch(currPos, ray.direction, glm::length(ray.direction * tFar), &distance, &currPos);
         currLength = glm::distance(currPos, start);
 
-        if (transmittance >= 0) // something is still visible
+        if (transmittance >= 0 && hitCell) // something is still visible
         {
             // Trilinearly interpolate voxel value at currPos
-            float density = trilinearInterp(currPos);
+//            float density = trilinearInterp(currPos);
 
-            // Map HU range [-1000, 1000] to [0, 1]
-//            density /= 1000;
-//            density += 1;
-//            density /= 2;
+            // Transform currPos from world space back to object space to access voxel data
+            glm::vec4 dataPos = box.worldToBox * glm::vec4(currPos, 1.f);
 
-            // Process voxel value
-            transmittance *= exp(-stepSize * density);
-            color += stepSize * density * transmittance;
+            if (dataPos.x < cubeSize && dataPos.y < cubeSize && dataPos.z < cubeSize) {
+//                float density = trilinearInterp(Point3f(dataPos.x, dataPos.y, dataPos.z));
+                float density = data.at(dataPos.z).at(dataPos.x * cubeSize + dataPos.y);
+
+
+                // Map HU range [-1000, 1000] to [0, 1]
+                //            density /= 1000;
+                //            density += 1;
+                //            density /= 2;
+
+                // Process voxel value
+                transmittance *= exp(-stepSize * density);
+                color += stepSize * density * transmittance;
+            }
         }
     }
 
@@ -310,21 +385,31 @@ QImage RayCast::renderData()
     // ----------------------------------------------------------------------//
 
     // Initialize bounding box -- size of phantom voxel data
-    glm::mat4 viewProj = glm::lookAt(camera.eye, camera.ref, camera.up);
+    // world to camera space
+//    glm::mat4 viewMat = glm::lookAt(camera.eye, camera.ref, camera.up);
 //    glm::mat4 viewProj = camera.getViewProj();
 //    glm::vec4 boxMin(-cubeSize/2, -cubeSize/2, 100, 1.f);
 //    glm::vec4 boxMax(cubeSize/2, cubeSize/2, cubeSize+100, 1.f);
 
-    glm::vec4 boxMin(-width / 2, -height / 2, 100, 1.f);
-    glm::vec4 boxMax(width / 2, height / 2, 100 + depth, 1.f);
-    boxMin = viewProj * boxMin;
-    boxMax = viewProj * boxMax;
-    AABoundingBox box(Point3f(boxMin.x, boxMin.y, boxMin.z),
-                      Point3f(boxMax.x, boxMax.y, boxMax.z));
+    // defined in object space
+
+
+    // object space to world spcae
+//    glm::mat4 boxToWorld = glm::translate(glm::mat4(), glm::vec3(-width / 2.f, -height/2.f, 100.0f));
+//    boxMin = boxToWorld * boxMin;
+//    boxMax = boxToWorld * boxMax;
+
+    // world space to camera space
+//    boxMin = viewProj * boxMin;
+//    boxMax = viewProj * boxMax;
 
     // Iterate through each pixel
     for (int w = 0; w < result.width(); ++w) {
         for (int h = 0; h < result.height(); ++h) {
+
+            if (w == 256 && h == 256) {
+                int x = 0;
+            }
 
             // Initialize pixel color to black
             Color3f color(0, 0, 0);
@@ -338,7 +423,7 @@ QImage RayCast::renderData()
             float tFar = std::numeric_limits<double>::infinity();
 
             // Check intersection of ray with axis aligned bounding box
-            bool hasIntersect = rayBoxIntersect(ray, box, tNear, tFar);
+            bool hasIntersect = rayBoxIntersect(ray, tNear, tFar);
 
             // Sample volume along ray
             if (hasIntersect)
