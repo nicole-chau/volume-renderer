@@ -39,8 +39,6 @@ void RayCast::loadData(int width, int height, const std::vector<std::vector<doub
     glm::vec4 boxMin = glm::vec4(0.f ,0.f ,0.f ,1.f);
     glm::vec4 boxMax = glm::vec4(width, height, depth, 1.f);
     box = BoundingBox(boxMin, boxMax);
-//    this->boxToWorld = glm::translate(glm::mat4(), glm::vec3(-width/2, -height/2, 100.0f));
-//    this->worldToBox = glm::inverse(boxToWorld);
 }
 
 void RayCast::createSphere()
@@ -137,9 +135,9 @@ void RayCast::createCubeVector()
         for (int j = 0; j < cubeSize * cubeSize; ++j)
         {
             // (x, y) -> [x + W * y]
-            if ((j <= (cubeSize * min) || j >= (cubeSize * max + 1)) && (i < min || i > max)){
+            if ((j <= (cubeSize * min) || j >= (cubeSize * max + 1)) && (i <= min || i > max)){
                 slice.push_back(0.1);
-            } else if ((j % cubeSize < min || j % cubeSize > max) && (i < min || i < max)) {
+            } else if ((j % cubeSize < min || j % cubeSize > max) && (i <= min || i < max)) {
                 slice.push_back(0.1);
             } else {
                 slice.push_back(0.5);
@@ -273,7 +271,7 @@ bool RayCast::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLe
 }
 
 Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
-    float stepSize = 1; // TODO: update
+    float stepSize = 1;
 
     Point3f start = ray.origin + (ray.direction * tNear);
     Point3f end = ray.origin + (ray.direction * tFar);
@@ -296,24 +294,26 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
 
         if (transmittance >= 0 && hitCell) // something is still visible
         {
-            // Trilinearly interpolate voxel value at currPos
-//            float density = trilinearInterp(currPos);
-
             // Transform currPos from world space back to object space to access voxel data
             glm::vec4 dataPos = box.worldToBox * glm::vec4(currPos, 1.f);
 
-            if (dataPos.x < cubeSize && dataPos.y < cubeSize && dataPos.z < cubeSize) {
+            if (dataPos.x < width && dataPos.y < height && dataPos.z < depth) {
 //                float density = trilinearInterp(Point3f(dataPos.x, dataPos.y, dataPos.z));
-                float density = data.at(dataPos.z).at(dataPos.x * cubeSize + dataPos.y);
+                float density = data.at(dataPos.z).at(dataPos.x * width + dataPos.y);
 
 
-                // Map HU range [-1000, 1000] to [0, 1]
+                // Map HU range [-1000, 1900] to [0, 1]
+                density = std::min(std::max(-1000.f, density), 1900.f);
+
+                density += 1000;
+                density /= 3000;
+
                 //            density /= 1000;
                 //            density += 1;
                 //            density /= 2;
 
                 // Process voxel value
-                transmittance *= exp(-stepSize * density);
+                transmittance *= exp(0.4 * -stepSize * density);
                 color += stepSize * density * transmittance;
             }
         }
@@ -356,14 +356,14 @@ float RayCast::trilinearInterp(Point3f pos)
 //            + phantom[xc][yc][zf] * xfrac * yfrac * (1 - zfrac)
 //            + phantom[xc][yc][zc] * xfrac * yfrac * zfrac;
 
-    float result = data.at(zf).at(xf + cubeSize * yf) * (1 - xfrac) * (1 - yfrac) * (1 - zfrac)
-            + data.at(zf).at(xc + cubeSize * yf) * xfrac * (1 - yfrac) * (1 - zfrac)
-            + data.at(zf).at(xf + cubeSize * yc) * (1 - xfrac) * yfrac * (1 - zfrac)
-            + data.at(zc).at(xf + cubeSize * yf) * (1 - xfrac) * (1 - yfrac) * zfrac
-            + data.at(zc).at(xc + cubeSize * yf) * xfrac * (1 - yfrac) * zfrac
-            + data.at(zc).at(xf + cubeSize * yc) * (1 - xfrac) * yfrac * zfrac
-            + data.at(zf).at(xc + cubeSize * yc) * xfrac * yfrac * (1 - zfrac)
-            + data.at(zc).at(xc + cubeSize * yc) * xfrac * yfrac * zfrac;
+    float result = data.at(zf).at(xf + width * yf) * (1 - xfrac) * (1 - yfrac) * (1 - zfrac)
+            + data.at(zf).at(xc + width * yf) * xfrac * (1 - yfrac) * (1 - zfrac)
+            + data.at(zf).at(xf + width * yc) * (1 - xfrac) * yfrac * (1 - zfrac)
+            + data.at(zc).at(xf + width * yf) * (1 - xfrac) * (1 - yfrac) * zfrac
+            + data.at(zc).at(xc + width * yf) * xfrac * (1 - yfrac) * zfrac
+            + data.at(zc).at(xf + width * yc) * (1 - xfrac) * yfrac * zfrac
+            + data.at(zf).at(xc + width * yc) * xfrac * yfrac * (1 - zfrac)
+            + data.at(zc).at(xc + width * yc) * xfrac * yfrac * zfrac;
 
     return result;
 }

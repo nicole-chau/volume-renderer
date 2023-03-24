@@ -40,17 +40,17 @@ void MainWindow::slot_loadFile() {
     FileLoader fileLoader(directoryName.toStdString());
     rayCast.loadData(fileLoader.width, fileLoader.height, fileLoader.data);
 
-//    renderedImage = rayCast.renderData();
-//    DisplayQImage(renderedImage);
+    renderedImage = rayCast.renderData();
+    DisplayQImage(renderedImage);
 
-    QImage img(fileLoader.pixelData, fileLoader.width, fileLoader.height, QImage::Format_Indexed8 );
-//    QGraphicsScene *graphic = new QGraphicsScene( this );
-    DisplayQImage(img);
+    // FOR DEBUGGING: Uncomment to display raw pixel data as RGB values
+//    QImage img(fileLoader.pixelData, fileLoader.width, fileLoader.height, QImage::Format_Indexed8 );
+//    DisplayQImage(img);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
-    float amount = 1.f;
+    float amount = 0.5f;
     switch(e->key())
     {
 //    case Qt::Key_Escape : on_actionQuit_Esc_triggered();  break;

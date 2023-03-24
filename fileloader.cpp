@@ -136,23 +136,26 @@ void FileLoader::processPixelData()
                 std::vector<double> slice;
 
                 // Get pixel data
-                Uint16 *pixelData16 = (Uint16 *)(image->getOutputData(16 /* bits per sample */));
+                // FOR DEBUGGING: change to Uint8 to get grayscale RGB value
+                short *pixelData = (short *)(image->getOutputData(16 /* bits per sample */));
+
+//                const DiPixel *interData = image->getInterData();
+//                EP_Representation rep = interData->getRepresentation();
+//                Sint16 *pixelData = (Sint16 *)interData->getData();
 
                 if (pixelData != NULL)
                 {
                     for (int i = 0; i < numPixels; ++i)
                     {
-                        pixelData[i] = pixelData16[i] >> 8;
-                        // Convert each pixel to Hounsfield unit:
-                        // hu = pixel_value * slope + intercept
-                        double hu = pixelData[i];
-//                        double hu = pixelData[i] * rescaleSlope + rescaleIntercept;
+                        // FOR DEBUGGING: get RGB value
+                        // pixelData[i] = pixelData[i] * 32 ;
+                        // Convert each pixel to Hounsfield unit: hu = pixel_value * slope + intercept
+//                        double hu = pixelData[i];
+                        double hu = pixelData[i] * rescaleSlope + rescaleIntercept;
+//                        double hu = 0;
                         slice.push_back(hu);
                     }
                 }
-
-
-                // TODO: min and max are both 25...
 
                 double min = *min_element(std::begin(slice), std::end(slice));
                 double max = *max_element(std::begin(slice), std::end(slice));

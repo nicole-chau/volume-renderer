@@ -18,7 +18,7 @@ struct BoundingBox
     {}
 
     BoundingBox(glm::vec4 min, glm::vec4 max)
-        : boxToWorld(glm::translate(glm::mat4(), glm::vec3(-max.x / 2.f, -max.y/2.f, 100.0f))),
+        : boxToWorld(glm::translate(glm::mat4(), glm::vec3(-max.x / 2.f, -max.y/2.f, 400))),
           worldToBox(glm::inverse(boxToWorld))
     {
         min = boxToWorld * min;
@@ -56,12 +56,7 @@ private:
     int depth;
 
     std::vector<std::vector<double>> data;
-
-    // bounding box
-//    glm::vec4 boxMin;
-//    glm::vec4 boxMax;
-//    glm::mat4 boxToWorld;
-//    glm::mat4 worldToBox;
+    // Bounding box for data
     BoundingBox box;
 
     Camera camera;
