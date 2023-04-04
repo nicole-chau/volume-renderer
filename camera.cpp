@@ -153,15 +153,16 @@ Ray Camera::rayCast(const Point2f &pixel) const
                 1 - (2.f * pixel.y / height));
 
     glm::vec3 P = ref + ndc.x * H + ndc.y * V;
+//    Ray result(eye, glm::normalize(ref));
     Ray result(eye, glm::normalize(P - eye));
     return result;
 
     // screen point to world point
-//    float alpha = glm::radians(fov / 2);
+//    float alpha = glm::radians(fovy / 2);
 //    float len = glm::length(ref - eye);
 //    Vector3f V = Vector3f(up.x, up.y, up.z) * len * tan(alpha);
 //    glm::vec3 right = glm::cross(glm::normalize(ref - eye), Vector3f(up.x, up.y, up.z));
-//    Vector3f H = right * len * aspectRatio * tan(alpha);
+//    Vector3f H = right * len * (width/height * 1.f) * tan(alpha);
 //    Point3f pointW = ref + ndc.x * H + ndc.y * V;
 
 //    // world point to ray

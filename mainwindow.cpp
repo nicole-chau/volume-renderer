@@ -23,6 +23,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
 void MainWindow::DisplayQImage(QImage &i)
 {
     QPixmap pixmap(QPixmap::fromImage(i));

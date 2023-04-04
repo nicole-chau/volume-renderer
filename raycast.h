@@ -21,11 +21,17 @@ struct BoundingBox
         : boxToWorld(glm::translate(glm::mat4(), glm::vec3(-max.x / 2.f, -max.y/2.f, 400))),
           worldToBox(glm::inverse(boxToWorld))
     {
+//        glm::mat4 rotationMatrix = glm::rotate( glm::mat4(1.f), glm::radians(20.f), glm::vec3(0.f,1.f,0.f) );
+
         min = boxToWorld * min;
+//        min = rotationMatrix * min;
         this->min = Point3f(min.x, min.y, min.z);
 
         max = boxToWorld * max;
+//        max = rotationMatrix * max;
         this->max = Point3f(max.x, max.y, max.z);
+
+//        this->worldToBox = glm::rotate(worldToBox, glm::radians(-20.f), glm::vec3(0,1,0));
     }
 };
 

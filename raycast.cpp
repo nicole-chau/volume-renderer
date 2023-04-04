@@ -206,6 +206,11 @@ bool RayCast::rayBoxIntersect(Ray ray, float &tNear, float &tFar) {
         tFar = tzMax < tFar ? tzMax : tFar;
     }
     */
+
+    // World space to camera space
+//    glm::vec4 min = camera.getView() * glm::vec4(box.min, 1.f);
+//    glm::vec4 max = camera.getView() * glm::vec4(box.max, 1.f);
+
     Point3f tMin = (box.min - ray.origin) / ray.direction;
     Point3f tMax = (box.max - ray.origin) / ray.direction;
     Point3f t1 = glm::min(tMin, tMax);
@@ -227,6 +232,7 @@ bool RayCast::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLe
         float interfaceAxis = -1; // Track axis for which t is smallest
         for (int i = 0; i < 3; ++i) { // Iterate over the three axes
             if (rayDirection[i] != 0) { // Is ray parallel to axis i?
+//                float offset = glm::sign(rayDirection[i]);
                 float offset = glm::max(0.f, glm::sign(rayDirection[i])); // See slide 5
                 // If the player is *exactly* on an interface then
                 // they'll never move if they're looking in a negative direction
@@ -251,6 +257,7 @@ bool RayCast::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLe
         glm::ivec3 offset = glm::ivec3(0,0,0);
         // Sets it to 0 if sign is +, -1 if sign is -
         offset[interfaceAxis] = glm::min(0.f, glm::sign(rayDirection[interfaceAxis]));
+
         currCell = glm::ivec3(glm::floor(rayOrigin)) + offset;
 
         *out_currPos = currCell;
@@ -271,7 +278,7 @@ bool RayCast::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLe
 }
 
 Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
-    float stepSize = 1;
+    float stepSize = 1.f;
 
     Point3f start = ray.origin + (ray.direction * tNear);
     Point3f end = ray.origin + (ray.direction * tFar);
@@ -299,28 +306,52 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
 
             if (dataPos.x < width && dataPos.y < height && dataPos.z < depth) {
 //                float density = trilinearInterp(Point3f(dataPos.x, dataPos.y, dataPos.z));
-                float density = data.at(dataPos.z).at(dataPos.x * width + dataPos.y);
+                // Flip x and y values because data is loaded in in this order
+                float density = data.at(dataPos.z).at(dataPos.y * width + dataPos.x);
 
 
-                // Map HU range [-1000, 1900] to [0, 1]
-                density = std::min(std::max(-1000.f, density), 1900.f);
+                // Map HU range [-1024, 3072] to [0, 1]
+                density = std::min(std::max(-1024.f, density), 3072.f);
 
-                density += 1000;
-                density /= 3000;
+                if (density >= -1024.f && density <= -950.f) {
+                    // air
+                    density = -1024.f;
+                } else if (density >= 3000) {
+                    // bone
+                    density = 3072.f;
+                } else if (density == 46) {
+                    // white matter
+                    density = 20;
+                } else if (density >= -700 && density <= -490) {
+                    // lung
+                    density = -1000.f;
+                } else if (density >= -5 && density <= 5) {
+                    // water
+                    density = -1024.f;
+                } else if (density >= 10 && density <= 80) {
+                    // clotted blood
+//                    density = 2000.f;
+                }
 
-                //            density /= 1000;
-                //            density += 1;
-                //            density /= 2;
+
+
+                density += 1024.f;
+                density /= (3072.f + 1024.f);
+//                density = log(density) + 1.f;
+
+
 
                 // Process voxel value
-                transmittance *= exp(0.4 * -stepSize * density);
-                color += stepSize * density * transmittance;
+                transmittance *= exp(0.5f * -stepSize * density);
+                color += stepSize * density * density * transmittance;
             }
+
         }
+
     }
 
 
-    color = Vector3f(glm::abs(1.f - transmittance));
+//    color = Vector3f(glm::abs(1.f - transmittance));
 
     return color;
 }
@@ -391,9 +422,6 @@ QImage RayCast::renderData()
 //    glm::vec4 boxMin(-cubeSize/2, -cubeSize/2, 100, 1.f);
 //    glm::vec4 boxMax(cubeSize/2, cubeSize/2, cubeSize+100, 1.f);
 
-    // defined in object space
-
-
     // object space to world spcae
 //    glm::mat4 boxToWorld = glm::translate(glm::mat4(), glm::vec3(-width / 2.f, -height/2.f, 100.0f));
 //    boxMin = boxToWorld * boxMin;
@@ -418,6 +446,10 @@ QImage RayCast::renderData()
             Point2f pixel(w, h);
             Ray ray = camera.rayCast(pixel);
 
+//            color = ray.direction;
+
+
+
             // Set tNear = -infinity and tFar = infinity
             float tNear = -std::numeric_limits<double>::infinity();
             float tFar = std::numeric_limits<double>::infinity();
@@ -430,6 +462,8 @@ QImage RayCast::renderData()
             {
                 color = sampleVolume(ray, tNear, tFar);
             }
+
+
 
             // Set pixel color
             color *= 255;
