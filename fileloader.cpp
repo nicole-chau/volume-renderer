@@ -5,7 +5,6 @@
 #include <QDebug>
 
 FileLoader::FileLoader(std::string directory)
-//    : directory(directory)
 {
     // Get all files in directory
     for (const auto &file : std::filesystem::directory_iterator(directory))
@@ -87,38 +86,6 @@ void FileLoader::getRescaleSlope(DcmFileFormat fileFormat)
         rescaleSlope = 1.0;
     }
 }
-
-/*
-void FileLoader::getPixelData()
-{
-    for (const std::string &file : files) {
-        DicomImage *image = new DicomImage(file.c_str());
-
-        if (image != NULL)
-        {
-            if (image->getStatus() == EIS_Normal)
-            {
-                // Initialize vector for current slice
-                std::vector<double> slice;
-
-                // Get pixel data (16 bits per sample)
-                short *pixelData = (short *)(image->getOutputData(16));
-
-                if (pixelData != NULL)
-                {
-                    for (int i = 0; i < numPixels; ++i)
-                    {
-
-                    }
-                }
-
-                data.push_back(slice);
-
-            }
-        }
-    }
-}
-*/
 
 void FileLoader::processPixelData()
 {

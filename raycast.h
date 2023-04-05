@@ -74,7 +74,7 @@ private:
     Color3f sampleVolume(Ray ray, float tNear, float tFar);
 
     // Grid marching
-    bool gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLength, float *out_dist, glm::vec3 *out_cellsHit);
+    void gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLength, float *out_dist, glm::vec3 *out_cellsHit);
 
     // Trilinear interpolation to get sampled value
     float trilinearInterp(Point3f pos);

@@ -19,8 +19,6 @@ public:
     Uint16 width;
     Uint16 height;
 
-//    Uint8 *pixelData;
-
 private:
     void getColumns(DcmFileFormat fileFormat);
     void getRows(DcmFileFormat fileFormat);

@@ -56,13 +56,6 @@ public:
 
     void reset();
 
-//    void translateForward(float z);
-//    void translateRight(float x);
-//    void translateUp(float y);
-//    void rotateForward(float deg);
-//    void rotateRight(float deg);
-//    void rotateUp(float deg);
-
     Ray rayCast(const Point2f &pixel) const;         //Creates a ray in 3D space given a 2D point on the screen, in screen coordinates.
     Ray rayCast(float x, float y) const;            //Same as above, but takes two floats rather than a vec2.
     Ray rayCastNDC(float ndc_x, float ndc_y) const; //Creates a ray in 3D space given a 2D point in normalized device coordinates.
