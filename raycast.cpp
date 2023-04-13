@@ -1,6 +1,7 @@
 #include "raycast.h"
 
 #include "math.h"
+#include "colormap.h"
 
 RayCast::RayCast()
     : width(512), height(512), depth(512), data({}), camera(Camera(512, 512))
@@ -24,9 +25,6 @@ void RayCast::createCubeVector()
 {
     int min = cubeSize * 0.2;
     int max = cubeSize * 0.8;
-
-//    int min2 = cubeSize * 0.4;
-//    int max2 = cubeSize * 0.6;
 
     for (int i = 0; i < cubeSize; ++i)
     {
@@ -139,40 +137,49 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
             if (dataPos.x < width && dataPos.y < height && dataPos.z < depth) {
 //                float density = trilinearInterp(Point3f(dataPos.x, dataPos.y, dataPos.z));
                 // Flip x and y values because data is loaded in in this order
-                float density = data.at(dataPos.z).at(dataPos.y * width + dataPos.x);
+                float hounsfield = data.at(dataPos.z).at(dataPos.y * width + dataPos.x);
 
 
                 // Map HU range [-1024, 3072] to [0, 1]
-                density = std::min(std::max(-1024.f, density), 3072.f);
+                hounsfield = std::min(std::max(-1024.f, hounsfield), 3072.f);
 
-                if (density >= -1024.f && density <= -950.f) {
-                    // air
-                    density = -1024.f;
-                } else if (density >= 3000) {
-                    // bone
-                    density = 3072.f;
-                } else if (density == 46) {
-                    // white matter
-                    density = 20;
-                } else if (density >= -700 && density <= -490) {
-                    // lung
-                    density = -1000.f;
-                } else if (density >= -5 && density <= 5) {
-                    // water
-                    density = -1024.f;
-                } else if (density >= 10 && density <= 80) {
-                    // clotted blood
-//                    density = 2000.f;
-                }
+                float density = hounsfield;
+                Color3f currColor;
+
+
+//                if (hounsfield >= -1024.f && hounsfield < -710.f) {
+//                    // air
+//                    hounsfield = -1024.f;
+////                    density = 3072.f;
+//                } else if (hounsfield >= -710.f && hounsfield < -490.f) {
+//                    // lung
+////                    density = 3072.f;
+//                } else if (hounsfield >= -120 && hounsfield < -90) {
+//                    // fat
+////                    density = 3072.f;
+//                } else if (hounsfield >= -5 && hounsfield < 5) {
+//                    // water
+////                    density = 3072.f;
+//                } else if (hounsfield >= 10 && hounsfield < 80) {
+//                    // clotted blood
+////                    density = 2000.f;
+//                } else if (hounsfield >= 300) {
+//                    // bone
+//                    hounsfield = 3072.f;
+//                }
 
 
                 density += 1024.f;
                 density /= (3072.f + 1024.f);
 //                density = log(density) + 1.f;
 
+//                currColor = Color3f(density);
+                getRGBColor(hounsfield, density, &currColor);
+
+
                 // Process voxel value
                 transmittance *= exp(0.5f * -stepSize * density);
-                color += stepSize * density * density * transmittance;
+                color += stepSize * density * currColor * transmittance;
             }
 
         }
@@ -181,6 +188,64 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
 
     return color;
 }
+
+float getTValue(float min, float max, float x) {
+    return ((x - min)) / (max - min);
+}
+
+Substance RayCast::getSubstanceType(float hounsfield, float *subMin, float *subMax) {
+    if (hounsfield >= AIR_MIN && hounsfield < AIR_MAX) {
+        *subMin = AIR_MIN;
+        *subMax = AIR_MAX;
+//        return AIR;
+    } else if (hounsfield >= LUNG_MIN && hounsfield < LUNG_MAX) {
+        *subMin = LUNG_MIN;
+        *subMax = LUNG_MAX;
+        return LUNG;
+    } else if (hounsfield >= BONE_MIN && hounsfield < BONE_MAX) {
+        *subMin = BONE_MIN;
+        *subMax = BONE_MAX;
+        return BONE;
+    }
+
+    return UNKNOWN;
+}
+
+void RayCast::getGrayscaleColor(float hounsfield, Color3f *color, float *density) {
+
+    float subMin;
+    float subMax;
+    Substance sub = getSubstanceType(hounsfield, &subMin, &subMax);
+
+    if (sub == UNKNOWN) {
+        *density = hounsfield;
+//        *density = (*density + 1024.f) / (3072.f + 1024.f);
+        return;
+    }
+
+    float t = getTValue(subMin, subMax, hounsfield);
+    std::tuple colors = grayscale.find(sub)->second;
+
+    float grayscaleVal = glm::mix(std::get<0>(colors), std::get<1>(colors), t);
+
+    *color = Color3f(grayscaleVal);
+//    *density = glm::mix(subMin, subMax, t);
+    *density = hounsfield;
+
+
+//    *density = (*density + 1024.f) / (3072.f + 1024.f);
+
+}
+
+void RayCast::getRGBColor(float hounsfield, float density, Color3f* color) {
+    if (hounsfield >= 300 && hounsfield <= 3000) {
+        float t = getTValue(300, 3000, hounsfield);
+        *color = glm::mix(colorScale[0], colorScale[1], t);
+    } else {
+        *color = Color3f(density);
+    }
+}
+
 
 float RayCast::trilinearInterp(Point3f pos)
 {

@@ -1,5 +1,6 @@
  #pragma once
 
+#include "colormap.h"
 #include "globals.h"
 #include "ray.h"
 #include "camera.h"
@@ -80,6 +81,9 @@ private:
     float trilinearInterp(Point3f pos);
     int clampIndexBounds(int index, int min, int max);
 
+    Substance getSubstanceType(float hounsfield, float *subMin, float *subMax);
+    void getGrayscaleColor(float hounsfield, Color3f *color, float *density);
+    void getRGBColor(float hounsfield, float density, Color3f* color);
 
     friend class MainWindow;
 };

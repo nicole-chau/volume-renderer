@@ -22,6 +22,7 @@ SOURCES += \
     ray.cpp \
 
 HEADERS += \
+    colormap.h \
     fileloader.h \
     mainwindow.h \
     camera.h \
