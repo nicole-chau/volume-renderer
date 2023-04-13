@@ -6,6 +6,11 @@
 #include "camera.h"
 #include <QImage>
 
+
+// Min and max range of Houndsfield unit values in CT scan
+const static float HU_MIN = -1024.f;
+const static float HU_MAX = 3072.f;
+
 struct BoundingBox
 {
     Point3f min;
@@ -51,6 +56,9 @@ public:
 
     QImage renderData();
 
+    void setUseRGB(bool useRGB);
+    void setRGBMinMaxRange(int min, int max);
+
 private:
     // width x height x depth (x, y, z)
     int cubeSize = 120;
@@ -67,6 +75,14 @@ private:
     BoundingBox box;
 
     Camera camera;
+
+    // RGB transfer function
+    bool useRGB;
+    int minHURange;
+    int maxHURange;
+    // Store maximum value for each interval within the range corresponding
+    // to each color in the RGB color map
+    std::vector<float> rangeIntervals;
 
     // Compute near and far intersections of ray with bounding box
     bool rayBoxIntersect(Ray ray, float &tNear, float &tFar);

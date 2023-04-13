@@ -44,5 +44,7 @@ private:
 
 public slots:
     void slot_loadFile();
+    void slot_toggleRGB(bool useRGB);
+    void slot_setHURange(int min, int max);
 };
 #endif // MAINWINDOW_H

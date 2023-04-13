@@ -14,6 +14,7 @@ INCLUDEPATH += $$PWD
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    ctkrangeslider.cpp \
     fileloader.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -23,6 +24,7 @@ SOURCES += \
 
 HEADERS += \
     colormap.h \
+    ctkrangeslider.h \
     fileloader.h \
     mainwindow.h \
     camera.h \

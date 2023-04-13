@@ -4,7 +4,15 @@
 #include "colormap.h"
 
 RayCast::RayCast()
-    : width(512), height(512), depth(512), data({}), camera(Camera(512, 512))
+    : width(512),
+      height(512),
+      depth(512),
+      data({}),
+      camera(Camera(512, 512)),
+      useRGB(false),
+      minHURange(-1024),
+      maxHURange(3072),
+      rangeIntervals({})
 {}
 
 void RayCast::loadData(int width, int height, const std::vector<std::vector<double>>& data)
@@ -136,46 +144,23 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
 
             if (dataPos.x < width && dataPos.y < height && dataPos.z < depth) {
 //                float density = trilinearInterp(Point3f(dataPos.x, dataPos.y, dataPos.z));
+
                 // Flip x and y values because data is loaded in in this order
                 float hounsfield = data.at(dataPos.z).at(dataPos.y * width + dataPos.x);
 
+                hounsfield = std::min(std::max(HU_MIN, hounsfield), HU_MAX);
 
                 // Map HU range [-1024, 3072] to [0, 1]
-                hounsfield = std::min(std::max(-1024.f, hounsfield), 3072.f);
-
                 float density = hounsfield;
+                density = (density + -HU_MIN) / (HU_MAX - HU_MIN);
+
                 Color3f currColor;
 
-
-//                if (hounsfield >= -1024.f && hounsfield < -710.f) {
-//                    // air
-//                    hounsfield = -1024.f;
-////                    density = 3072.f;
-//                } else if (hounsfield >= -710.f && hounsfield < -490.f) {
-//                    // lung
-////                    density = 3072.f;
-//                } else if (hounsfield >= -120 && hounsfield < -90) {
-//                    // fat
-////                    density = 3072.f;
-//                } else if (hounsfield >= -5 && hounsfield < 5) {
-//                    // water
-////                    density = 3072.f;
-//                } else if (hounsfield >= 10 && hounsfield < 80) {
-//                    // clotted blood
-////                    density = 2000.f;
-//                } else if (hounsfield >= 300) {
-//                    // bone
-//                    hounsfield = 3072.f;
-//                }
-
-
-                density += 1024.f;
-                density /= (3072.f + 1024.f);
-//                density = log(density) + 1.f;
-
-//                currColor = Color3f(density);
-                getRGBColor(hounsfield, density, &currColor);
-
+                if (useRGB) {
+                    getRGBColor(hounsfield, density, &currColor);
+                } else {
+                    currColor = Color3f(density);
+                }
 
                 // Process voxel value
                 transmittance *= exp(0.5f * -stepSize * density);
@@ -219,7 +204,6 @@ void RayCast::getGrayscaleColor(float hounsfield, Color3f *color, float *density
 
     if (sub == UNKNOWN) {
         *density = hounsfield;
-//        *density = (*density + 1024.f) / (3072.f + 1024.f);
         return;
     }
 
@@ -232,15 +216,47 @@ void RayCast::getGrayscaleColor(float hounsfield, Color3f *color, float *density
 //    *density = glm::mix(subMin, subMax, t);
     *density = hounsfield;
 
+}
 
-//    *density = (*density + 1024.f) / (3072.f + 1024.f);
+void RayCast::setUseRGB(bool useRGB) {
+    this->useRGB = useRGB;
+}
 
+void RayCast::setRGBMinMaxRange(int min, int max)
+{
+    minHURange = min;
+    maxHURange = max;
+    float rangeDiff = maxHURange - minHURange;
+
+    // Define maximum value for each interval within the range corresponding
+    // to each color in the RGB color map
+    for (int i = 0; i < 5; ++i) {
+        float intervalMax = minHURange + i * (rangeDiff * 0.25);
+        rangeIntervals.push_back(intervalMax);
+    }
 }
 
 void RayCast::getRGBColor(float hounsfield, float density, Color3f* color) {
-    if (hounsfield >= 300 && hounsfield <= 3000) {
-        float t = getTValue(300, 3000, hounsfield);
-        *color = glm::mix(colorScale[0], colorScale[1], t);
+    if (hounsfield >= minHURange && hounsfield <= maxHURange) {
+        if (hounsfield <= rangeIntervals[1]) {
+            float t = getTValue(rangeIntervals[0], rangeIntervals[1], hounsfield);
+            *color = glm::mix(colorScale[0], colorScale[1], t);
+
+        } else if (hounsfield <= rangeIntervals[2]) {
+            float t = getTValue(rangeIntervals[1] + 1, rangeIntervals[2], hounsfield);
+            *color = glm::mix(colorScale[1], colorScale[2], t);
+
+        } else if (hounsfield <= rangeIntervals[3]) {
+            float t = getTValue(rangeIntervals[2] + 1, rangeIntervals[3], hounsfield);
+            *color = glm::mix(colorScale[2], colorScale[3], t);
+
+        } else {
+            float t = getTValue(rangeIntervals[3] + 1, rangeIntervals[4], hounsfield);
+            *color = glm::mix(colorScale[3], colorScale[4], t);
+        }
+
+//        *color = *color / 255.f;
+
     } else {
         *color = Color3f(density);
     }

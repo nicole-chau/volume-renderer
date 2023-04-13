@@ -10,6 +10,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setFocusPolicy(Qt::StrongFocus);
     connect(ui->loadButton, SIGNAL(clicked(bool)), this, SLOT(slot_loadFile()));
+    connect(ui->displayRGB, SIGNAL(clicked(bool)), this, SLOT(slot_toggleRGB(bool)));
+    connect(ui->rangeSlider, SIGNAL(valuesChanged(int, int)), this, SLOT(slot_setHURange(int, int)));
 
 //   rayCast.createCube();
 //   rayCast.createSphere();
@@ -32,7 +34,8 @@ void MainWindow::DisplayQImage(QImage &i)
     ui->scene_display->setScene(&graphicsScene);
 }
 
-void MainWindow::slot_loadFile() {
+void MainWindow::slot_loadFile()
+{
 
     QString directoryName = QFileDialog::getExistingDirectory(this, QString("Load DICOM Files"),
                                                     QDir::currentPath() + (QString("../..")),
@@ -47,6 +50,25 @@ void MainWindow::slot_loadFile() {
     // FOR DEBUGGING: Uncomment to display raw pixel data as RGB values
 //    QImage img(fileLoader.pixelData, fileLoader.width, fileLoader.height, QImage::Format_Indexed8 );
 //    DisplayQImage(img);
+}
+
+void MainWindow::slot_toggleRGB(bool useRGB)
+{
+    rayCast.useRGB = useRGB;
+    rayCast.setRGBMinMaxRange(ui->rangeSlider->minimumValue(), ui->rangeSlider->maximumValue());
+    renderedImage = rayCast.renderData();
+    DisplayQImage(renderedImage);
+}
+
+void MainWindow::slot_setHURange(int min, int max)
+{
+    ui->selectedMin->setText("Selected Min: " + QString::number(min));
+    ui->selectedMax->setText("Selected Max: " + QString::number(max));
+
+    rayCast.setRGBMinMaxRange(min, max);
+
+    renderedImage = rayCast.renderData();
+    DisplayQImage(renderedImage);
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *e)
@@ -73,6 +95,7 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
     renderedImage = rayCast.renderData();
     DisplayQImage(renderedImage);
 }
+
 
 void MainWindow::mousePressEvent(QMouseEvent *e)
 {
