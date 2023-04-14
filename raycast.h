@@ -24,7 +24,7 @@ struct BoundingBox
     {}
 
     BoundingBox(glm::vec4 min, glm::vec4 max)
-        : boxToWorld(glm::translate(glm::mat4(), glm::vec3(-max.x / 2.f, -max.y/2.f, 400))),
+        : boxToWorld(glm::translate(glm::mat4(), glm::vec3(-max.x / 2.f, -max.y/2.f, -max.z/2.f))),
           worldToBox(glm::inverse(boxToWorld))
     {
 //        glm::mat4 rotationMatrix = glm::rotate( glm::mat4(1.f), glm::radians(20.f), glm::vec3(0.f,1.f,0.f) );
@@ -95,7 +95,7 @@ private:
 
     // Trilinear interpolation to get sampled value
     float trilinearInterp(Point3f pos);
-    int clampIndexBounds(int index, int min, int max);
+    float clamp(float x, float min, float max);
 
     Substance getSubstanceType(float hounsfield, float *subMin, float *subMax);
     void getGrayscaleColor(float hounsfield, Color3f *color, float *density);

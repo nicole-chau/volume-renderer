@@ -8,7 +8,7 @@ RayCast::RayCast()
       height(512),
       depth(512),
       data({}),
-      camera(Camera(512, 512)),
+      camera(512, 512),
       useRGB(false),
       minHURange(-1024),
       maxHURange(3072),
@@ -23,10 +23,14 @@ void RayCast::loadData(int width, int height, const std::vector<std::vector<doub
     this->data = data;
     this->depth = data.size();
 
+
     // Initialize bounding box
     glm::vec4 boxMin = glm::vec4(0.f ,0.f ,0.f ,1.f);
     glm::vec4 boxMax = glm::vec4(width, height, depth, 1.f);
     box = BoundingBox(boxMin, boxMax);
+
+//    this->camera.reset();
+//    this->camera.ref = glm::vec3(boxMin + boxMax) * 0.5f;
 }
 
 void RayCast::createCubeVector()
@@ -117,6 +121,7 @@ void RayCast::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLe
 
 Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
     float stepSize = 1.f;
+    float k = useRGB ? 0.9 : 0.5;
 
     Point3f start = ray.origin + (ray.direction * tNear);
     Point3f end = ray.origin + (ray.direction * tFar);
@@ -130,6 +135,9 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
     // Loop while we have not reached end of box
     float currLength = glm::distance(currPos, start);
     float endLength = glm::distance(end, start);
+
+    int numSteps = 0;
+    float prevDensity;
     while (currLength < endLength)
     {
         // Grid march
@@ -141,6 +149,8 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
         {
             // Transform currPos from world space back to object space to access voxel data
             glm::vec4 dataPos = box.worldToBox * glm::vec4(currPos, 1.f);
+
+
 
             if (dataPos.x < width && dataPos.y < height && dataPos.z < depth) {
 //                float density = trilinearInterp(Point3f(dataPos.x, dataPos.y, dataPos.z));
@@ -157,19 +167,42 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
                 Color3f currColor;
 
                 if (useRGB) {
-                    getRGBColor(hounsfield, density, &currColor);
+                    if (abs(density - prevDensity) < 0.01) {
+                        currColor = Color3f(0.f);
+                    } else {
+                        getRGBColor(hounsfield, density, &currColor);
+                    }
                 } else {
                     currColor = Color3f(density);
                 }
 
                 // Process voxel value
-                transmittance *= exp(0.5f * -stepSize * density);
+                transmittance *= exp(k * -stepSize * density);
                 color += stepSize * density * currColor * transmittance;
+
+                if (dataPos.x == 315 && dataPos.y == 320) {
+                    if(useRGB) {
+                        getRGBColor(hounsfield, density, &currColor);
+                    }
+                    qDebug() << currColor.x << ", " << currColor.y << ", " << currColor.z;
+                    qDebug() << "Density: " << density;
+                }
+
+                numSteps++;
+                prevDensity = density;
             }
 
         }
 
     }
+
+    color.r = clamp(color.r, 0, 1);
+    color.g = clamp(color.g, 0, 1);
+    color.b = clamp(color.b, 0, 1);
+
+//    if (useRGB) {
+//        color /= log2(numSteps);
+//    }
 
     return color;
 }
@@ -230,6 +263,7 @@ void RayCast::setRGBMinMaxRange(int min, int max)
 
     // Define maximum value for each interval within the range corresponding
     // to each color in the RGB color map
+    rangeIntervals.clear();
     for (int i = 0; i < 5; ++i) {
         float intervalMax = minHURange + i * (rangeDiff * 0.25);
         rangeIntervals.push_back(intervalMax);
@@ -272,13 +306,13 @@ float RayCast::trilinearInterp(Point3f pos)
     float z = pos.z - 100;
 
     // Clamp to index bounds
-    int xf = clampIndexBounds(std::floor(x), 0, width - 1);
-    int yf = clampIndexBounds(std::floor(y), 0, height - 1);
-    int zf = clampIndexBounds(std::floor(z), 0, depth - 1);
+    int xf = clamp(std::floor(x), 0, width - 1);
+    int yf = clamp(std::floor(y), 0, height - 1);
+    int zf = clamp(std::floor(z), 0, depth - 1);
 
-    int xc = clampIndexBounds(std::ceil(x), 0, width - 1);
-    int yc = clampIndexBounds(std::ceil(y), 0, height - 1);
-    int zc = clampIndexBounds(std::ceil(z), 0, depth - 1);
+    int xc = clamp(std::ceil(x), 0, width - 1);
+    int yc = clamp(std::ceil(y), 0, height - 1);
+    int zc = clamp(std::ceil(z), 0, depth - 1);
 
     // Fractional part of considered resampling location's position
     float xfrac = x - std::floor(x);
@@ -297,9 +331,9 @@ float RayCast::trilinearInterp(Point3f pos)
     return result;
 }
 
-int RayCast::clampIndexBounds(int index, int min, int max)
+float RayCast::clamp(float x, float min, float max)
 {
-    return std::min(max, std::max(min, index));
+    return std::min(max, std::max(min, x));
 }
 
 QImage RayCast::renderData()
