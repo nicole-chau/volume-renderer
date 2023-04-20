@@ -22,12 +22,8 @@ public:
     ~MainWindow();
 
     void DisplayQImage(QImage &i);
+
     void keyPressEvent(QKeyEvent *e);
-
-    void mousePressEvent(QMouseEvent *e);
-    void mouseMoveEvent(QMouseEvent *e);
-
-    glm::vec2 m_mousePosPrev;
 
 private:
     Ui::MainWindow *ui;
@@ -45,6 +41,12 @@ private:
 public slots:
     void slot_loadFile();
     void slot_toggleRGB(bool useRGB);
-    void slot_setHURange(int min, int max);
+    void slot_setHURangeSlider(int min, int max);
+    void slot_setHUMinSpinBox(int min);
+    void slot_setHUMaxSpinBox(int max);
+    void slot_confirmHUValue();
+
+    void on_actionCamera_Controls_triggered();
+    void on_actionHounsfield_Unit_Chart_triggered();
 };
 #endif // MAINWINDOW_H

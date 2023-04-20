@@ -14,8 +14,10 @@ INCLUDEPATH += $$PWD
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    cameracontrols.cpp \
     ctkrangeslider.cpp \
     fileloader.cpp \
+    huchart.cpp \
     main.cpp \
     mainwindow.cpp \
     camera.cpp \
@@ -23,9 +25,11 @@ SOURCES += \
     ray.cpp \
 
 HEADERS += \
+    cameracontrols.h \
     colormap.h \
     ctkrangeslider.h \
     fileloader.h \
+    huchart.h \
     mainwindow.h \
     camera.h \
     raycast.h \
@@ -33,6 +37,8 @@ HEADERS += \
     globals.h \
 
 FORMS += \
+    cameracontrols.ui \
+    huchart.ui \
     mainwindow.ui
 
 # Default rules for deployment.

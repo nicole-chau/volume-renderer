@@ -167,11 +167,11 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
                 Color3f currColor;
 
                 if (useRGB) {
-                    if (abs(density - prevDensity) < 0.01) {
-                        currColor = Color3f(0.f);
-                    } else {
+//                    if (abs(density - prevDensity) < 0.01) {
+//                        currColor = Color3f(0.f);
+//                    } else {
                         getRGBColor(hounsfield, density, &currColor);
-                    }
+//                    }
                 } else {
                     currColor = Color3f(density);
                 }
@@ -179,16 +179,6 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
                 // Process voxel value
                 transmittance *= exp(k * -stepSize * density);
                 color += stepSize * density * currColor * transmittance;
-
-                if (dataPos.x == 315 && dataPos.y == 320) {
-                    if(useRGB) {
-                        getRGBColor(hounsfield, density, &currColor);
-                    }
-                    qDebug() << currColor.x << ", " << currColor.y << ", " << currColor.z;
-                    qDebug() << "Density: " << density;
-                }
-
-                numSteps++;
                 prevDensity = density;
             }
 
@@ -199,10 +189,6 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
     color.r = clamp(color.r, 0, 1);
     color.g = clamp(color.g, 0, 1);
     color.b = clamp(color.b, 0, 1);
-
-//    if (useRGB) {
-//        color /= log2(numSteps);
-//    }
 
     return color;
 }
