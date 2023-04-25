@@ -136,8 +136,6 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
     float currLength = glm::distance(currPos, start);
     float endLength = glm::distance(end, start);
 
-    int numSteps = 0;
-    float prevDensity;
     while (currLength < endLength)
     {
         // Grid march
@@ -149,8 +147,6 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
         {
             // Transform currPos from world space back to object space to access voxel data
             glm::vec4 dataPos = box.worldToBox * glm::vec4(currPos, 1.f);
-
-
 
             if (dataPos.x < width && dataPos.y < height && dataPos.z < depth) {
 //                float density = trilinearInterp(Point3f(dataPos.x, dataPos.y, dataPos.z));
@@ -167,19 +163,15 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
                 Color3f currColor;
 
                 if (useRGB) {
-//                    if (abs(density - prevDensity) < 0.01) {
-//                        currColor = Color3f(0.f);
-//                    } else {
-                        getRGBColor(hounsfield, density, &currColor);
-//                    }
+                    getRGBColor(hounsfield, density, &currColor);
                 } else {
                     currColor = Color3f(density);
+
                 }
 
                 // Process voxel value
                 transmittance *= exp(k * -stepSize * density);
                 color += stepSize * density * currColor * transmittance;
-                prevDensity = density;
             }
 
         }
@@ -195,46 +187,6 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
 
 float getTValue(float min, float max, float x) {
     return ((x - min)) / (max - min);
-}
-
-Substance RayCast::getSubstanceType(float hounsfield, float *subMin, float *subMax) {
-    if (hounsfield >= AIR_MIN && hounsfield < AIR_MAX) {
-        *subMin = AIR_MIN;
-        *subMax = AIR_MAX;
-//        return AIR;
-    } else if (hounsfield >= LUNG_MIN && hounsfield < LUNG_MAX) {
-        *subMin = LUNG_MIN;
-        *subMax = LUNG_MAX;
-        return LUNG;
-    } else if (hounsfield >= BONE_MIN && hounsfield < BONE_MAX) {
-        *subMin = BONE_MIN;
-        *subMax = BONE_MAX;
-        return BONE;
-    }
-
-    return UNKNOWN;
-}
-
-void RayCast::getGrayscaleColor(float hounsfield, Color3f *color, float *density) {
-
-    float subMin;
-    float subMax;
-    Substance sub = getSubstanceType(hounsfield, &subMin, &subMax);
-
-    if (sub == UNKNOWN) {
-        *density = hounsfield;
-        return;
-    }
-
-    float t = getTValue(subMin, subMax, hounsfield);
-    std::tuple colors = grayscale.find(sub)->second;
-
-    float grayscaleVal = glm::mix(std::get<0>(colors), std::get<1>(colors), t);
-
-    *color = Color3f(grayscaleVal);
-//    *density = glm::mix(subMin, subMax, t);
-    *density = hounsfield;
-
 }
 
 void RayCast::setUseRGB(bool useRGB) {
@@ -274,9 +226,6 @@ void RayCast::getRGBColor(float hounsfield, float density, Color3f* color) {
             float t = getTValue(rangeIntervals[3] + 1, rangeIntervals[4], hounsfield);
             *color = glm::mix(colorScale[3], colorScale[4], t);
         }
-
-//        *color = *color / 255.f;
-
     } else {
         *color = Color3f(density);
     }
@@ -342,8 +291,6 @@ QImage RayCast::renderData()
             // Cast ray to pixel on screen
             Point2f pixel(w, h);
             Ray ray = camera.rayCast(pixel);
-
-//            color = ray.direction;
 
             // Set tNear = -infinity and tFar = infinity
             float tNear = -std::numeric_limits<double>::infinity();

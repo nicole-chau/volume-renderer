@@ -18,9 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->spinBoxMax, SIGNAL(valueChanged(int)), this, SLOT(slot_setHUMaxSpinBox(int)));
     connect(ui->confirmButton, SIGNAL(clicked(bool)), this, SLOT(slot_confirmHUValue()));
 
-//   rayCast.createCube();
-//   rayCast.createSphere();
-   rayCast.createCubeVector();
+//   rayCast.createCubeVector();
    renderedImage = rayCast.renderData();
    DisplayQImage(renderedImage);
 }
