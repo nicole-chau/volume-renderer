@@ -15,24 +15,6 @@ RayCast::RayCast()
       rangeIntervals({})
 {}
 
-void RayCast::loadData(int width, int height, const std::vector<std::vector<double>>& data)
-{
-    // Load data and data size properties
-    this->width = width;
-    this->height = height;
-    this->data = data;
-    this->depth = data.size();
-
-
-    // Initialize bounding box
-    glm::vec4 boxMin = glm::vec4(0.f ,0.f ,0.f ,1.f);
-    glm::vec4 boxMax = glm::vec4(width, height, depth, 1.f);
-    box = BoundingBox(boxMin, boxMax);
-
-//    this->camera.reset();
-//    this->camera.ref = glm::vec3(boxMin + boxMax) * 0.5f;
-}
-
 void RayCast::createCubeVector()
 {
     int min = cubeSize * 0.2;
@@ -65,11 +47,67 @@ void RayCast::createCubeVector()
     glm::vec4 boxMin = glm::vec4(0.f, 0.f, 0.f, 1.f);
     glm::vec4 boxMax = glm::vec4 (width, height, depth, 1.f);
     box = BoundingBox(boxMin, boxMax);
-
 }
 
-// Compute near and far intersections of ray with bounding box
-bool RayCast::rayBoxIntersect(Ray ray, float &tNear, float &tFar) {
+void RayCast::loadData(int width, int height, const std::vector<std::vector<double>>& data)
+{
+    // Load data and data size properties
+    this->width = width;
+    this->height = height;
+    this->data = data;
+    this->depth = data.size();
+
+
+    // Initialize bounding box
+    glm::vec4 boxMin = glm::vec4(0.f ,0.f ,0.f ,1.f);
+    glm::vec4 boxMax = glm::vec4(width, height, depth, 1.f);
+    box = BoundingBox(boxMin, boxMax);
+
+    this->camera.reset();
+}
+
+float RayCast::trilinearInterp(Point3f pos)
+{
+    // TODO: Map to voxel data indices
+    // (0, 0, 20) --> (16, 16, 0)
+    float x = pos.x + width / 2;
+    float y = pos.y + height / 2;
+    float z = pos.z - 100;
+
+    // Clamp to index bounds
+    int xf = clamp(std::floor(x), 0, width - 1);
+    int yf = clamp(std::floor(y), 0, height - 1);
+    int zf = clamp(std::floor(z), 0, depth - 1);
+
+    int xc = clamp(std::ceil(x), 0, width - 1);
+    int yc = clamp(std::ceil(y), 0, height - 1);
+    int zc = clamp(std::ceil(z), 0, depth - 1);
+
+    // Fractional part of considered resampling location's position
+    float xfrac = x - std::floor(x);
+    float yfrac = y - std::floor(y);
+    float zfrac = z - std::floor(z);
+
+    float result = data.at(zf).at(xf + width * yf) * (1 - xfrac) * (1 - yfrac) * (1 - zfrac)
+            + data.at(zf).at(xc + width * yf) * xfrac * (1 - yfrac) * (1 - zfrac)
+            + data.at(zf).at(xf + width * yc) * (1 - xfrac) * yfrac * (1 - zfrac)
+            + data.at(zc).at(xf + width * yf) * (1 - xfrac) * (1 - yfrac) * zfrac
+            + data.at(zc).at(xc + width * yf) * xfrac * (1 - yfrac) * zfrac
+            + data.at(zc).at(xf + width * yc) * (1 - xfrac) * yfrac * zfrac
+            + data.at(zf).at(xc + width * yc) * xfrac * yfrac * (1 - zfrac)
+            + data.at(zc).at(xc + width * yc) * xfrac * yfrac * zfrac;
+
+    return result;
+}
+
+float RayCast::clamp(float x, float min, float max)
+{
+    return std::min(max, std::max(min, x));
+}
+
+
+bool RayCast::rayBoxIntersect(Ray ray, float &tNear, float &tFar)
+{
     Point3f tMin = (box.min - ray.origin) / ray.direction;
     Point3f tMax = (box.max - ray.origin) / ray.direction;
     Point3f t1 = glm::min(tMin, tMax);
@@ -81,7 +119,9 @@ bool RayCast::rayBoxIntersect(Ray ray, float &tNear, float &tFar) {
     return tFar > tNear;
 }
 
-void RayCast::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLength, float *out_dist, glm::vec3 *out_currPos) {
+void RayCast::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLength, float *out_dist, glm::vec3 *out_currPos)
+
+{
     glm::ivec3 currCell = glm::ivec3(glm::floor(rayOrigin));
     rayDirection = glm::normalize(rayDirection); // Now all t values represent world dist.
 
@@ -119,7 +159,57 @@ void RayCast::gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLe
     *out_currPos = currCell;
 }
 
-Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
+void RayCast::setUseRGB(bool useRGB)
+{
+    this->useRGB = useRGB;
+}
+
+void RayCast::setRGBMinMaxRange(int min, int max)
+{
+    minHURange = min;
+    maxHURange = max;
+    float rangeDiff = maxHURange - minHURange;
+
+    // Define maximum value for each interval within the range corresponding
+    // to each color in the RGB color map
+    rangeIntervals.clear();
+    for (int i = 0; i < 5; ++i) {
+        float intervalMax = minHURange + i * (rangeDiff * 0.25);
+        rangeIntervals.push_back(intervalMax);
+    }
+}
+
+float RayCast::getTValue(float min, float max, float x)
+{
+    return ((x - min)) / (max - min);
+}
+
+void RayCast::getRGBColor(float hounsfield, float density, Color3f* color)
+{
+    if (hounsfield >= minHURange && hounsfield <= maxHURange) {
+        if (hounsfield <= rangeIntervals[1]) {
+            float t = getTValue(rangeIntervals[0], rangeIntervals[1], hounsfield);
+            *color = glm::mix(colorScale[0], colorScale[1], t);
+
+        } else if (hounsfield <= rangeIntervals[2]) {
+            float t = getTValue(rangeIntervals[1] + 1, rangeIntervals[2], hounsfield);
+            *color = glm::mix(colorScale[1], colorScale[2], t);
+
+        } else if (hounsfield <= rangeIntervals[3]) {
+            float t = getTValue(rangeIntervals[2] + 1, rangeIntervals[3], hounsfield);
+            *color = glm::mix(colorScale[2], colorScale[3], t);
+
+        } else {
+            float t = getTValue(rangeIntervals[3] + 1, rangeIntervals[4], hounsfield);
+            *color = glm::mix(colorScale[3], colorScale[4], t);
+        }
+    } else {
+        *color = Color3f(density);
+    }
+}
+
+Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar)
+{
     float stepSize = 1.f;
     float k = useRGB ? 0.9 : 0.5;
 
@@ -166,16 +256,13 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
                     getRGBColor(hounsfield, density, &currColor);
                 } else {
                     currColor = Color3f(density);
-
                 }
 
                 // Process voxel value
                 transmittance *= exp(k * -stepSize * density);
                 color += stepSize * density * currColor * transmittance;
             }
-
         }
-
     }
 
     color.r = clamp(color.r, 0, 1);
@@ -183,92 +270,6 @@ Color3f RayCast::sampleVolume(Ray ray, float tNear, float tFar) {
     color.b = clamp(color.b, 0, 1);
 
     return color;
-}
-
-float getTValue(float min, float max, float x) {
-    return ((x - min)) / (max - min);
-}
-
-void RayCast::setUseRGB(bool useRGB) {
-    this->useRGB = useRGB;
-}
-
-void RayCast::setRGBMinMaxRange(int min, int max)
-{
-    minHURange = min;
-    maxHURange = max;
-    float rangeDiff = maxHURange - minHURange;
-
-    // Define maximum value for each interval within the range corresponding
-    // to each color in the RGB color map
-    rangeIntervals.clear();
-    for (int i = 0; i < 5; ++i) {
-        float intervalMax = minHURange + i * (rangeDiff * 0.25);
-        rangeIntervals.push_back(intervalMax);
-    }
-}
-
-void RayCast::getRGBColor(float hounsfield, float density, Color3f* color) {
-    if (hounsfield >= minHURange && hounsfield <= maxHURange) {
-        if (hounsfield <= rangeIntervals[1]) {
-            float t = getTValue(rangeIntervals[0], rangeIntervals[1], hounsfield);
-            *color = glm::mix(colorScale[0], colorScale[1], t);
-
-        } else if (hounsfield <= rangeIntervals[2]) {
-            float t = getTValue(rangeIntervals[1] + 1, rangeIntervals[2], hounsfield);
-            *color = glm::mix(colorScale[1], colorScale[2], t);
-
-        } else if (hounsfield <= rangeIntervals[3]) {
-            float t = getTValue(rangeIntervals[2] + 1, rangeIntervals[3], hounsfield);
-            *color = glm::mix(colorScale[2], colorScale[3], t);
-
-        } else {
-            float t = getTValue(rangeIntervals[3] + 1, rangeIntervals[4], hounsfield);
-            *color = glm::mix(colorScale[3], colorScale[4], t);
-        }
-    } else {
-        *color = Color3f(density);
-    }
-}
-
-
-float RayCast::trilinearInterp(Point3f pos)
-{
-    // TODO: Map to voxel data indices
-    // (0, 0, 20) --> (16, 16, 0)
-    float x = pos.x + width / 2;
-    float y = pos.y + height / 2;
-    float z = pos.z - 100;
-
-    // Clamp to index bounds
-    int xf = clamp(std::floor(x), 0, width - 1);
-    int yf = clamp(std::floor(y), 0, height - 1);
-    int zf = clamp(std::floor(z), 0, depth - 1);
-
-    int xc = clamp(std::ceil(x), 0, width - 1);
-    int yc = clamp(std::ceil(y), 0, height - 1);
-    int zc = clamp(std::ceil(z), 0, depth - 1);
-
-    // Fractional part of considered resampling location's position
-    float xfrac = x - std::floor(x);
-    float yfrac = y - std::floor(y);
-    float zfrac = z - std::floor(z);
-
-    float result = data.at(zf).at(xf + width * yf) * (1 - xfrac) * (1 - yfrac) * (1 - zfrac)
-            + data.at(zf).at(xc + width * yf) * xfrac * (1 - yfrac) * (1 - zfrac)
-            + data.at(zf).at(xf + width * yc) * (1 - xfrac) * yfrac * (1 - zfrac)
-            + data.at(zc).at(xf + width * yf) * (1 - xfrac) * (1 - yfrac) * zfrac
-            + data.at(zc).at(xc + width * yf) * xfrac * (1 - yfrac) * zfrac
-            + data.at(zc).at(xf + width * yc) * (1 - xfrac) * yfrac * zfrac
-            + data.at(zf).at(xc + width * yc) * xfrac * yfrac * (1 - zfrac)
-            + data.at(zc).at(xc + width * yc) * xfrac * yfrac * zfrac;
-
-    return result;
-}
-
-float RayCast::clamp(float x, float min, float max)
-{
-    return std::min(max, std::max(min, x));
 }
 
 QImage RayCast::renderData()

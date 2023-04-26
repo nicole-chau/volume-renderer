@@ -35,35 +35,28 @@ struct BoundingBox
     }
 };
 
+
 class RayCast
 {
 public:
     RayCast();
-    RayCast(const std::vector<std::vector<double>>& data);
-    RayCast(int width, int height, std::vector<std::vector<double>> data);
 
-    void loadData(int width, int height, const std::vector<std::vector<double>>& data);
-
-    void createCube();
-    void createSphere();
     void createCubeVector();
 
-    QImage renderData();
+    void loadData(int width, int height, const std::vector<std::vector<double>>& data);
 
     void setUseRGB(bool useRGB);
     void setRGBMinMaxRange(int min, int max);
 
-private:
-    // width x height x depth (x, y, z)
-    int cubeSize = 120;
+    QImage renderData();
 
-    float phantom[120][120][120] = {{{}}};
+private:
+    int cubeSize = 120;
     std::vector<std::vector<double>> phantomVector;
 
     int width;
     int height;
     int depth;
-
     std::vector<std::vector<double>> data;
     // Bounding box for data
     BoundingBox box;
@@ -78,20 +71,22 @@ private:
     // to each color in the RGB color map
     std::vector<float> rangeIntervals;
 
-    // Compute near and far intersections of ray with bounding box
-    bool rayBoxIntersect(Ray ray, float &tNear, float &tFar);
-
-    // Sample voxel along ray
-    Color3f sampleVolume(Ray ray, float tNear, float tFar);
-
-    // Grid marching
-    void gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLength, float *out_dist, glm::vec3 *out_cellsHit);
-
     // Trilinear interpolation to get sampled value
     float trilinearInterp(Point3f pos);
     float clamp(float x, float min, float max);
 
+    // Compute near and far intersections of ray with bounding box
+    bool rayBoxIntersect(Ray ray, float &tNear, float &tFar);
+
+    // Grid marching
+    void gridMarch(glm::vec3 rayOrigin, glm::vec3 rayDirection, float maxLength, float *out_dist, glm::vec3 *out_cellsHit);
+
+    // Get t value for linear interpolation
+    float getTValue(float min, float max, float x);
     void getRGBColor(float hounsfield, float density, Color3f* color);
+
+    // Sample voxel along ray
+    Color3f sampleVolume(Ray ray, float tNear, float tFar);
 
     friend class MainWindow;
 };

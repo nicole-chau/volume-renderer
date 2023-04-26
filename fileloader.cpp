@@ -116,16 +116,15 @@ void FileLoader::processPixelData()
                     {
                         // FOR DEBUGGING: get RGB value
                         // pixelData[i] = pixelData[i] * 32 ;
+
                         // Convert each pixel to Hounsfield unit: hu = pixel_value * slope + intercept
-//                        double hu = pixelData[i];
                         double hu = pixelData[i] * rescaleSlope + rescaleIntercept;
-//                        double hu = 0;
                         slice.push_back(hu);
                     }
                 }
 
-                double min = *min_element(std::begin(slice), std::end(slice));
-                double max = *max_element(std::begin(slice), std::end(slice));
+//                double min = *min_element(std::begin(slice), std::end(slice));
+//                double max = *max_element(std::begin(slice), std::end(slice));
 
                 data.push_back(slice);
 

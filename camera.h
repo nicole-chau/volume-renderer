@@ -35,7 +35,6 @@ public:
     Camera(const Camera &c);
 
     void recomputeAttributes();
-//    void recomputePolarAttributes();
 
     glm::mat4 getViewProj();
     glm::mat4 getView();
