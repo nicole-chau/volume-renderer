@@ -14,32 +14,33 @@ INCLUDEPATH += $$PWD
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    cameracontrols.cpp \
-    ctkrangeslider.cpp \
-    fileloader.cpp \
-    huchart.cpp \
-    main.cpp \
-    mainwindow.cpp \
-    camera.cpp \
-    raycast.cpp \
-    ray.cpp \
+    src/camera.cpp \
+    src/cameracontrols.cpp \
+    src/ctkrangeslider.cpp \
+    src/fileloader.cpp \
+    src/huchart.cpp \
+    src/main.cpp \
+    src/mainwindow.cpp \
+    src/camera.cpp \
+    src/raycast.cpp \
+    src/ray.cpp \
 
 HEADERS += \
-    cameracontrols.h \
-    colormap.h \
-    ctkrangeslider.h \
-    fileloader.h \
-    huchart.h \
-    mainwindow.h \
-    camera.h \
-    raycast.h \
-    ray.h \
-    globals.h \
+    src/cameracontrols.h \
+    src/colormap.h \
+    src/ctkrangeslider.h \
+    src/fileloader.h \
+    src/huchart.h \
+    src/mainwindow.h \
+    src/camera.h \
+    src/raycast.h \
+    src/ray.h \
+    src/globals.h \
 
 FORMS += \
-    cameracontrols.ui \
-    huchart.ui \
-    mainwindow.ui
+    forms/cameracontrols.ui \
+    forms/huchart.ui \
+    forms/mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
