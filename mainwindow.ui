@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>818</width>
+    <width>878</width>
     <height>600</height>
    </rect>
   </property>
@@ -69,9 +69,9 @@
     <property name="geometry">
      <rect>
       <x>570</x>
-      <y>230</y>
+      <y>200</y>
       <width>22</width>
-      <height>261</height>
+      <height>301</height>
      </rect>
     </property>
     <property name="minimum">
@@ -87,11 +87,11 @@
      <enum>Qt::Vertical</enum>
     </property>
    </widget>
-   <widget class="QLabel" name="label">
+   <widget class="QLabel" name="huMax">
     <property name="geometry">
      <rect>
-      <x>550</x>
-      <y>210</y>
+      <x>570</x>
+      <y>170</y>
       <width>71</width>
       <height>16</height>
      </rect>
@@ -100,11 +100,11 @@
      <string>HU = 3072</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2">
+   <widget class="QLabel" name="huMin">
     <property name="geometry">
      <rect>
-      <x>550</x>
-      <y>490</y>
+      <x>570</x>
+      <y>510</y>
       <width>71</width>
       <height>16</height>
      </rect>
@@ -116,8 +116,8 @@
    <widget class="QLabel" name="selectedMin">
     <property name="geometry">
      <rect>
-      <x>640</x>
-      <y>210</y>
+      <x>660</x>
+      <y>170</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -129,8 +129,8 @@
    <widget class="QLabel" name="selectedMax">
     <property name="geometry">
      <rect>
-      <x>640</x>
-      <y>240</y>
+      <x>660</x>
+      <y>200</y>
       <width>131</width>
       <height>21</height>
      </rect>
@@ -142,8 +142,8 @@
    <widget class="QSpinBox" name="spinBoxMin">
     <property name="geometry">
      <rect>
-      <x>730</x>
-      <y>210</y>
+      <x>750</x>
+      <y>170</y>
       <width>71</width>
       <height>22</height>
      </rect>
@@ -158,8 +158,8 @@
    <widget class="QSpinBox" name="spinBoxMax">
     <property name="geometry">
      <rect>
-      <x>730</x>
-      <y>240</y>
+      <x>750</x>
+      <y>200</y>
       <width>71</width>
       <height>22</height>
      </rect>
@@ -177,8 +177,8 @@
    <widget class="QPushButton" name="confirmButton">
     <property name="geometry">
      <rect>
-      <x>640</x>
-      <y>270</y>
+      <x>660</x>
+      <y>230</y>
       <width>100</width>
       <height>32</height>
      </rect>
@@ -187,25 +187,12 @@
      <string>Confirm Values</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_3">
+   <widget class="QLabel" name="description">
     <property name="geometry">
      <rect>
       <x>550</x>
-      <y>90</y>
-      <width>251</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>550</x>
-      <y>90</y>
-      <width>241</width>
+      <y>70</y>
+      <width>321</width>
       <height>91</height>
      </rect>
     </property>
@@ -216,13 +203,32 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QLabel" name="colorMap">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>200</y>
+      <width>21</width>
+      <height>291</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap resource="Resources.qrc">:/images/color-map.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>818</width>
+     <width>878</width>
      <height>37</height>
     </rect>
    </property>
@@ -254,6 +260,8 @@
    <header>ctkrangeslider.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="Resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

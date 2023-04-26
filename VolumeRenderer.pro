@@ -125,3 +125,6 @@ else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../../..
 else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/release/ofstd.lib
 else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/debug/ofstd.lib
 else:unix: PRE_TARGETDEPS += $$PWD/../../../../../opt/homebrew/Cellar/dcmtk/3.6.7/lib/libofstd.a
+
+RESOURCES += \
+    Resources.qrc

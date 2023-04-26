@@ -13,6 +13,11 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+const static int COLOR_MAP_X = 610;
+const static int COLOR_MAP_Y = 200;
+const static int COLOR_MAP_WIDTH = 21;
+const static int COLOR_MAP_HEIGHT = 291;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -37,11 +42,16 @@ private:
     // Ray caster used to render scene
     RayCast rayCast;
 
+    // Dynamically set position of color map image
+    void setColorMapMin(int min);
+    void setColorMapMax(int min);
 
 public slots:
     void slot_loadFile();
     void slot_toggleRGB(bool useRGB);
-    void slot_setHURangeSlider(int min, int max);
+    void slot_setHURangeSliderMin(int min);
+    void slot_setHURangeSliderMax(int max);
+
     void slot_setHUMinSpinBox(int min);
     void slot_setHUMaxSpinBox(int max);
     void slot_confirmHUValue();
